@@ -4,6 +4,7 @@ struct DataSelectionView: View {
     @State private var exportWeight = true
     @State private var showingExporter = false
     @State private var csvContent = ""
+    @State private var fileName = ""
     
     let healthManager = HealthKitManager()
 
@@ -34,7 +35,7 @@ struct DataSelectionView: View {
         }
         .padding()
         .sheet(isPresented: $showingExporter) {
-            DocumentExporter(csvContent: csvContent, fileName: "weight_data.csv")
+            DocumentExporter(csvContent: csvContent, fileName: fileName)
         }
     }
     
@@ -44,6 +45,10 @@ struct DataSelectionView: View {
                 healthManager.fetchWeightData { samples, error in
                     if let samples = samples {
                         csvContent = CSVGenerator.generateWeightCSV(from: samples)
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyy-MM-dd"
+                        let dateString = dateFormatter.string(from: Date())
+                        fileName = "\(dateString)_weight_data.csv"
                         showingExporter = true
                     } else {
                         print("Error fetching data: \(error?.localizedDescription ?? "Unknown error")")
