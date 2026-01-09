@@ -12,6 +12,7 @@ struct DataSelectionView: View {
     @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
     @State private var endDate = Date()
     
+    @ObservedObject var settings: SettingsManager
     let healthManager = HealthKitManager()
     
     private var isValidDateRange: Bool {
@@ -144,7 +145,7 @@ struct DataSelectionView: View {
                 }
                 
                 dispatchGroup.notify(queue: .main) {
-                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples)
+                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, weightUnit: self.settings.weightUnit)
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd"
                     let dateString = dateFormatter.string(from: Date())

@@ -1,7 +1,7 @@
 import HealthKit
 
 class CSVGenerator {
-    static func generateWeightCSV(from samples: [HKQuantitySample]) -> String {
+    static func generateWeightCSV(from samples: [HKQuantitySample], unit: WeightUnit) -> String {
         var csv = "Date,Metric,Value,Unit\n"
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .short
@@ -9,8 +9,9 @@ class CSVGenerator {
         
         for sample in samples {
             let date = dateFormatter.string(from: sample.startDate)
-            let weight = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
-            csv += "\(date),Weight,\(weight),kg\n"
+            let weightKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
+            let (value, unitString) = convertWeight(weightKg, to: unit)
+            csv += "\(date),Weight,\(String(format: "%.2f", value)),\(unitString)\n"
         }
         return csv
     }
@@ -29,7 +30,7 @@ class CSVGenerator {
         return csv
     }
     
-    static func generateCombinedCSV(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?) -> String {
+    static func generateCombinedCSV(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?, weightUnit: WeightUnit) -> String {
         var csv = "Date,Metric,Value,Unit\n"
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .short
@@ -38,8 +39,9 @@ class CSVGenerator {
         if let weightSamples = weightSamples {
             for sample in weightSamples {
                 let date = dateFormatter.string(from: sample.startDate)
-                let weight = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
-                csv += "\(date),Weight,\(weight),kg\n"
+                let weightKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
+                let (value, unitString) = convertWeight(weightKg, to: weightUnit)
+                csv += "\(date),Weight,\(String(format: "%.2f", value)),\(unitString)\n"
             }
         }
         
@@ -52,5 +54,15 @@ class CSVGenerator {
         }
         
         return csv
+    }
+    
+    private static func convertWeight(_ weightKg: Double, to unit: WeightUnit) -> (Double, String) {
+        switch unit {
+        case .kilograms:
+            return (weightKg, "kg")
+        case .pounds:
+            let weightLbs = weightKg * 2.2046226218
+            return (weightLbs, "lbs")
+        }
     }
 }

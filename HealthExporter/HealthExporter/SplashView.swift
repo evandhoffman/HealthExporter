@@ -14,7 +14,7 @@ struct SplashView: View {
                     .font(.subheadline)
                     .padding()
                 Spacer()
-                NavigationLink(destination: DataSelectionView()) {
+                NavigationLink(destination: DataSelectionView(settings: settings)) {
                     Text("Next")
                         .font(.title)
                         .padding()
