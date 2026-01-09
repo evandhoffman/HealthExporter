@@ -17,10 +17,20 @@ class HealthKitManager {
         }
     }
     
-    func fetchWeightData(completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
+    func fetchWeightData(dateRange: (startDate: Date, endDate: Date)? = nil, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+        
+        var predicate: NSPredicate? = nil
+        if let dateRange = dateRange {
+            // Create predicate for date range (inclusive)
+            let calendar = Calendar.current
+            let startOfDay = calendar.startOfDay(for: dateRange.startDate)
+            let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate))!
+            predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+        }
+        
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-        let query = HKSampleQuery(sampleType: weightType, predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
+        let query = HKSampleQuery(sampleType: weightType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
             completion(samples as? [HKQuantitySample], error)
         }
         healthStore.execute(query)

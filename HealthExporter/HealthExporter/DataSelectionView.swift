@@ -6,6 +6,9 @@ struct DataSelectionView: View {
     @State private var showingExporter = false
     @State private var csvContent = ""
     @State private var fileName = ""
+    @State private var useAllData = false
+    @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
+    @State private var endDate = Date()
     
     let healthManager = HealthKitManager()
 
@@ -19,6 +22,39 @@ struct DataSelectionView: View {
                 Text("Weight")
             }
             .padding()
+            
+            Divider()
+                .padding()
+            
+            Text("Date Range")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            Toggle(isOn: $useAllData) {
+                Text("All Data")
+            }
+            .padding()
+            
+            if !useAllData {
+                VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading) {
+                        Text("Start Date")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                        DatePicker("", selection: $startDate, displayedComponents: .date)
+                            .datePickerStyle(.compact)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("End Date")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                        DatePicker("", selection: $endDate, displayedComponents: .date)
+                            .datePickerStyle(.compact)
+                    }
+                }
+                .padding()
+            }
             
             Spacer()
             
@@ -53,7 +89,8 @@ struct DataSelectionView: View {
     private func exportData() {
         healthManager.requestAuthorization { success, error in
             if success {
-                healthManager.fetchWeightData { samples, error in
+                let dateRange = useAllData ? nil : (startDate, endDate)
+                healthManager.fetchWeightData(dateRange: dateRange) { samples, error in
                     if let samples = samples {
                         csvContent = CSVGenerator.generateWeightCSV(from: samples)
                         let dateFormatter = DateFormatter()
