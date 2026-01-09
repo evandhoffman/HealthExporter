@@ -1,8 +1,10 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import HealthKit
 
 struct DataSelectionView: View {
     @State private var exportWeight = true
+    @State private var exportSteps = false
     @State private var showingExporter = false
     @State private var csvContent = ""
     @State private var fileName = ""
@@ -11,6 +13,18 @@ struct DataSelectionView: View {
     @State private var endDate = Date()
     
     let healthManager = HealthKitManager()
+    
+    private var isValidDateRange: Bool {
+        useAllData || startDate <= endDate
+    }
+    
+    private var hasSelectedMetric: Bool {
+        exportWeight || exportSteps
+    }
+    
+    private var canExport: Bool {
+        hasSelectedMetric && isValidDateRange
+    }
 
     var body: some View {
         VStack {
@@ -21,7 +35,12 @@ struct DataSelectionView: View {
             Toggle(isOn: $exportWeight) {
                 Text("Weight")
             }
-            .padding()
+            .padding(.horizontal)
+            
+            Toggle(isOn: $exportSteps) {
+                Text("Steps")
+            }
+            .padding(.horizontal)
             
             Divider()
                 .padding()
@@ -58,16 +77,29 @@ struct DataSelectionView: View {
             
             Spacer()
             
+            if !hasSelectedMetric {
+                Text("Please select at least one metric")
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+            
+            if !useAllData && !isValidDateRange {
+                Text("End date must be on or after start date")
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+            
             Button(action: {
                 exportData()
             }) {
                 Text("Export...")
                     .font(.title)
                     .padding()
-                    .background(Color.green)
+                    .background(canExport ? Color.green : Color.gray)
                     .foregroundColor(.white)
                     .cornerRadius(10)
             }
+            .disabled(!canExport)
             .padding()
         }
         .padding()
@@ -90,17 +122,34 @@ struct DataSelectionView: View {
         healthManager.requestAuthorization { success, error in
             if success {
                 let dateRange = useAllData ? nil : (startDate, endDate)
-                healthManager.fetchWeightData(dateRange: dateRange) { samples, error in
-                    if let samples = samples {
-                        csvContent = CSVGenerator.generateWeightCSV(from: samples)
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "yyyy-MM-dd"
-                        let dateString = dateFormatter.string(from: Date())
-                        fileName = "\(dateString)_weight_data.csv"
-                        showingExporter = true
-                    } else {
-                        print("Error fetching data: \(error?.localizedDescription ?? "Unknown error")")
+                
+                var weightSamples: [HKQuantitySample]? = nil
+                var stepsSamples: [HKQuantitySample]? = nil
+                let dispatchGroup = DispatchGroup()
+                
+                if exportWeight {
+                    dispatchGroup.enter()
+                    healthManager.fetchWeightData(dateRange: dateRange) { samples, error in
+                        weightSamples = samples
+                        dispatchGroup.leave()
                     }
+                }
+                
+                if exportSteps {
+                    dispatchGroup.enter()
+                    healthManager.fetchStepsData(dateRange: dateRange) { samples, error in
+                        stepsSamples = samples
+                        dispatchGroup.leave()
+                    }
+                }
+                
+                dispatchGroup.notify(queue: .main) {
+                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples)
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd"
+                    let dateString = dateFormatter.string(from: Date())
+                    fileName = "\(dateString)_health_data.csv"
+                    showingExporter = true
                 }
             } else {
                 print("Authorization failed: \(error?.localizedDescription ?? "Unknown error")")
