@@ -6,6 +6,7 @@ struct DataSelectionView: View {
     @State private var exportWeight = true
     @State private var exportSteps = false
     @State private var showingExporter = false
+    @State private var showingShareSheet = false
     @State private var csvContent = ""
     @State private var fileName = ""
     @State private var useAllData = false
@@ -90,17 +91,33 @@ struct DataSelectionView: View {
                     .foregroundColor(.red)
             }
             
-            Button(action: {
-                exportData()
-            }) {
-                Text("Export...")
-                    .font(.title)
-                    .padding()
-                    .background(canExport ? Color.green : Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+            HStack(spacing: 12) {
+                Button(action: {
+                    exportData(forSaving: true)
+                }) {
+                    Text("Save...")
+                        .font(.title3)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(canExport ? Color.blue : Color.gray)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .disabled(!canExport)
+                
+                Button(action: {
+                    exportData(forSaving: false)
+                }) {
+                    Text("Share...")
+                        .font(.title3)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(canExport ? Color.green : Color.gray)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .disabled(!canExport)
             }
-            .disabled(!canExport)
             .padding()
         }
         .padding()
@@ -117,9 +134,12 @@ struct DataSelectionView: View {
                 print("Error saving file: \(error)")
             }
         }
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(filePath: saveToTemporaryLocation(), fileName: fileName)
+        }
     }
     
-    private func exportData() {
+    private func exportData(forSaving: Bool) {
         healthManager.requestAuthorization { success, error in
             if success {
                 let dateRange = useAllData ? nil : (startDate, endDate)
@@ -150,17 +170,29 @@ struct DataSelectionView: View {
                     dateFormatter.dateFormat = "yyyy-MM-dd"
                     let dateString = dateFormatter.string(from: Date())
                     fileName = "\(dateString)_health_data.csv"
-                    showingExporter = true
+                    
+                    if forSaving {
+                        showingExporter = true
+                    } else {
+                        showingShareSheet = true
+                    }
                 }
             } else {
                 print("Authorization failed: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
     }
+    
+    private func saveToTemporaryLocation() -> URL {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent(fileName)
+        try? csvContent.write(to: fileURL, atomically: true, encoding: .utf8)
+        return fileURL
+    }
 }
 
 struct DataSelectionView_Previews: PreviewProvider {
     static var previews: some View {
-        DataSelectionView()
+        DataSelectionView(settings: SettingsManager())
     }
 }
