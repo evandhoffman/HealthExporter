@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct DataSelectionView: View {
     @State private var exportWeight = true
@@ -34,8 +35,18 @@ struct DataSelectionView: View {
             .padding()
         }
         .padding()
-        .sheet(isPresented: $showingExporter) {
-            DocumentExporter(csvContent: csvContent, fileName: fileName)
+        .fileExporter(
+            isPresented: $showingExporter,
+            document: CSVDocument(content: csvContent),
+            contentType: .commaSeparatedText,
+            defaultFilename: fileName
+        ) { result in
+            switch result {
+            case .success(let url):
+                print("File saved to: \(url)")
+            case .failure(let error):
+                print("Error saving file: \(error)")
+            }
         }
     }
     
