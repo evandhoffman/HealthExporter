@@ -167,9 +167,9 @@ struct DataSelectionView: View {
                 dispatchGroup.notify(queue: .main) {
                     csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, weightUnit: self.settings.weightUnit)
                     let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy-MM-dd"
+                    dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
                     let dateString = dateFormatter.string(from: Date())
-                    fileName = "\(dateString)_health_data.csv"
+                    fileName = "\(dateString)_health_export.csv"
                     
                     if forSaving {
                         showingExporter = true
