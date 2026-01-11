@@ -3,6 +3,9 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var settings: SettingsManager
     @Environment(\.dismiss) var dismiss
+    @State private var testDataMessage = ""
+    
+    let healthManager = HealthKitManager()
     
     var body: some View {
         NavigationView {
@@ -27,6 +30,21 @@ struct SettingsView: View {
                             }
                         }
                     }
+                    
+                    #if targetEnvironment(simulator)
+                    Section(header: Text("Testing")) {
+                        Button(action: generateTestData) {
+                            Text("Generate Test Data")
+                                .foregroundColor(.blue)
+                        }
+                        
+                        if !testDataMessage.isEmpty {
+                            Text(testDataMessage)
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
+                    }
+                    #endif
                 }
             }
             .navigationTitle("Settings")
@@ -40,6 +58,18 @@ struct SettingsView: View {
             }
         }
     }
+    
+    #if targetEnvironment(simulator)
+    private func generateTestData() {
+        healthManager.generateTestData { success, error in
+            if success {
+                testDataMessage = "✓ Test data generated (30 days)"
+            } else {
+                testDataMessage = "✗ Failed to generate test data"
+            }
+        }
+    }
+    #endif
 }
 
 struct SettingsView_Previews: PreviewProvider {
