@@ -3,10 +3,6 @@ import UniformTypeIdentifiers
 import HealthKit
 
 struct DataSelectionView: View {
-    @State private var exportWeight = true
-    @State private var exportSteps = false
-    @State private var exportA1C = false
-    @State private var exportGlucose = false
     @State private var showingExporter = false
     @State private var showingShareSheet = false
     @State private var csvData: Data?
@@ -24,7 +20,7 @@ struct DataSelectionView: View {
     }
     
     private var hasSelectedMetric: Bool {
-        exportWeight || exportSteps || exportA1C || exportGlucose
+        settings.exportWeight || settings.exportSteps || settings.exportA1C || settings.exportGlucose
     }
     
     private var canExport: Bool {
@@ -37,22 +33,22 @@ struct DataSelectionView: View {
                 .font(.largeTitle)
                 .padding()
             
-            Toggle(isOn: $exportWeight) {
+            Toggle(isOn: $settings.exportWeight) {
                 Text("Weight")
             }
             .padding(.horizontal)
             
-            Toggle(isOn: $exportSteps) {
+            Toggle(isOn: $settings.exportSteps) {
                 Text("Steps")
             }
             .padding(.horizontal)
             
-            Toggle(isOn: $exportA1C) {
+            Toggle(isOn: $settings.exportA1C) {
                 Text("Hemoglobin A1C (%)")
             }
             .padding(.horizontal)
             
-            Toggle(isOn: $exportGlucose) {
+            Toggle(isOn: $settings.exportGlucose) {
                 Text("Blood Glucose (mg/dL)")
             }
             .padding(.horizontal)
@@ -163,7 +159,7 @@ struct DataSelectionView: View {
                 var glucoseSamples: [GlucoseSampleMgDl]? = nil
                 let dispatchGroup = DispatchGroup()
                 
-                if exportWeight {
+                if settings.exportWeight {
                     dispatchGroup.enter()
                     healthManager.fetchWeightData(dateRange: dateRange) { samples, error in
                         weightSamples = samples
@@ -171,7 +167,7 @@ struct DataSelectionView: View {
                     }
                 }
                 
-                if exportSteps {
+                if settings.exportSteps {
                     dispatchGroup.enter()
                     healthManager.fetchStepsData(dateRange: dateRange) { samples, error in
                         stepsSamples = samples
@@ -179,7 +175,7 @@ struct DataSelectionView: View {
                     }
                 }
                 
-                if exportA1C {
+                if settings.exportA1C {
                     dispatchGroup.enter()
                     healthManager.fetchHemoglobinA1CData(dateRange: dateRange) { samples, error in
                         a1cSamples = samples
@@ -187,7 +183,7 @@ struct DataSelectionView: View {
                     }
                 }
                 
-                if exportGlucose {
+                if settings.exportGlucose {
                     dispatchGroup.enter()
                     healthManager.fetchBloodGlucoseDataTyped(dateRange: dateRange) { samples, error in
                         glucoseSamples = samples

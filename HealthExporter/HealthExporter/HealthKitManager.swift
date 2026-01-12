@@ -91,7 +91,7 @@ class HealthKitManager {
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         let query = HKSampleQuery(sampleType: a1cType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
-            let a1cSamples = (samples as? [HKQuantitySample])?.map { A1CSamplePct(from: $0) }
+            let a1cSamples = (samples as? [HKQuantitySample])?.compactMap { A1CSamplePct(from: $0) }
             completion(a1cSamples, error)
         }
         healthStore.execute(query)
@@ -111,7 +111,7 @@ class HealthKitManager {
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
-            let glucoseSamples = (samples as? [HKQuantitySample])?.map { GlucoseSampleMgDl(from: $0) }
+            let glucoseSamples = (samples as? [HKQuantitySample])?.compactMap { GlucoseSampleMgDl(from: $0) }
             completion(glucoseSamples, error)
         }
         healthStore.execute(query)

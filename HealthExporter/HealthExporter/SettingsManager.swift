@@ -35,6 +35,30 @@ class SettingsManager: ObservableObject {
         }
     }
     
+    @Published var exportWeight: Bool {
+        didSet {
+            UserDefaults.standard.set(exportWeight, forKey: "exportWeight")
+        }
+    }
+    
+    @Published var exportSteps: Bool {
+        didSet {
+            UserDefaults.standard.set(exportSteps, forKey: "exportSteps")
+        }
+    }
+    
+    @Published var exportA1C: Bool {
+        didSet {
+            UserDefaults.standard.set(exportA1C, forKey: "exportA1C")
+        }
+    }
+    
+    @Published var exportGlucose: Bool {
+        didSet {
+            UserDefaults.standard.set(exportGlucose, forKey: "exportGlucose")
+        }
+    }
+    
     init() {
         let tempUnitRaw = UserDefaults.standard.string(forKey: "temperatureUnit") ?? TemperatureUnit.celsius.rawValue
         self.temperatureUnit = TemperatureUnit(rawValue: tempUnitRaw) ?? .celsius
@@ -44,5 +68,11 @@ class SettingsManager: ObservableObject {
         
         let distanceSpeedUnitRaw = UserDefaults.standard.string(forKey: "distanceSpeedUnit") ?? DistanceSpeedUnit.metric.rawValue
         self.distanceSpeedUnit = DistanceSpeedUnit(rawValue: distanceSpeedUnitRaw) ?? .metric
+        
+        // Load metric preferences (default to exporting weight and steps)
+        self.exportWeight = UserDefaults.standard.object(forKey: "exportWeight") as? Bool ?? true
+        self.exportSteps = UserDefaults.standard.object(forKey: "exportSteps") as? Bool ?? true
+        self.exportA1C = UserDefaults.standard.object(forKey: "exportA1C") as? Bool ?? false
+        self.exportGlucose = UserDefaults.standard.object(forKey: "exportGlucose") as? Bool ?? false
     }
 }
