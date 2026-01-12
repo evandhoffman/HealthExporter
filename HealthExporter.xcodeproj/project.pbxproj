@@ -6,13 +6,33 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A9DCE2CB43EE22722FB3793C /* libPods-HealthExporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2825E7550697EE955DD57CC6 /* libPods-HealthExporter.a */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		1DBDF74C2F10AFD6008549F8 /* HealthExporter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthExporter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2825E7550697EE955DD57CC6 /* libPods-HealthExporter.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HealthExporter.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		82377906375B69966A413710 /* Pods-HealthExporter.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthExporter.release.xcconfig"; path = "Target Support Files/Pods-HealthExporter/Pods-HealthExporter.release.xcconfig"; sourceTree = "<group>"; };
+		D373AE31C3243EDA7322B3DC /* Pods-HealthExporter.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthExporter.debug.xcconfig"; path = "Target Support Files/Pods-HealthExporter/Pods-HealthExporter.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1DB438C62F1565DE00BE2D97 /* Exceptions for "HealthExporter" folder in "HealthExporter" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1DBDF74B2F10AFD6008549F8 /* HealthExporter */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1DBDF74E2F10AFD6008549F8 /* HealthExporter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1DB438C62F1565DE00BE2D97 /* Exceptions for "HealthExporter" folder in "HealthExporter" target */,
+			);
 			path = HealthExporter;
 			sourceTree = "<group>";
 		};
@@ -23,17 +43,28 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A9DCE2CB43EE22722FB3793C /* libPods-HealthExporter.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		03989774CDAEC5C47DF48E58 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2825E7550697EE955DD57CC6 /* libPods-HealthExporter.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		1DBDF7432F10AFD6008549F8 = {
 			isa = PBXGroup;
 			children = (
 				1DBDF74E2F10AFD6008549F8 /* HealthExporter */,
 				1DBDF74D2F10AFD6008549F8 /* Products */,
+				AA6E491B9F9BBF8CE7D62AE6 /* Pods */,
+				03989774CDAEC5C47DF48E58 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -45,6 +76,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		AA6E491B9F9BBF8CE7D62AE6 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				D373AE31C3243EDA7322B3DC /* Pods-HealthExporter.debug.xcconfig */,
+				82377906375B69966A413710 /* Pods-HealthExporter.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -52,9 +92,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DBDF7572F10AFD8008549F8 /* Build configuration list for PBXNativeTarget "HealthExporter" */;
 			buildPhases = (
+				342C8BC552A8D6996D3B60D3 /* [CP] Check Pods Manifest.lock */,
 				1DBDF7482F10AFD6008549F8 /* Sources */,
 				1DBDF7492F10AFD6008549F8 /* Frameworks */,
 				1DBDF74A2F10AFD6008549F8 /* Resources */,
+				48B5D96FC71EE8618B305891 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -64,8 +106,6 @@
 				1DBDF74E2F10AFD6008549F8 /* HealthExporter */,
 			);
 			name = HealthExporter;
-			packageProductDependencies = (
-			);
 			productName = HealthExporter;
 			productReference = 1DBDF74C2F10AFD6008549F8 /* HealthExporter.app */;
 			productType = "com.apple.product-type.application";
@@ -113,6 +153,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		342C8BC552A8D6996D3B60D3 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HealthExporter-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		48B5D96FC71EE8618B305891 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HealthExporter/Pods-HealthExporter-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-HealthExporter/Pods-HealthExporter-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HealthExporter/Pods-HealthExporter-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		1DBDF7482F10AFD6008549F8 /* Sources */ = {
@@ -162,7 +244,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -225,7 +307,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -246,6 +328,7 @@
 		};
 		1DBDF7582F10AFD8008549F8 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D373AE31C3243EDA7322B3DC /* Pods-HealthExporter.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -255,6 +338,7 @@
 				DEVELOPMENT_TEAM = 94S5PZTVPY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HealthExporter/Info.plist;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to your health data to export your weight history to a CSV file.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need permission to read your health data.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -281,6 +365,7 @@
 		};
 		1DBDF7592F10AFD8008549F8 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 82377906375B69966A413710 /* Pods-HealthExporter.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -290,6 +375,7 @@
 				DEVELOPMENT_TEAM = 94S5PZTVPY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HealthExporter/Info.plist;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to your health data to export your weight history to a CSV file.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need permission to read your health data.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
