@@ -1,13 +1,23 @@
 import HealthKit
 
 class CSVGenerator {
+    private static func createDateFormatter() -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter
+    }
+    
+    private static func createISO8601Formatter() -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter
+    }
+    
     static func generateWeightCSV(from samples: [HKQuantitySample], unit: WeightUnit) -> String {
         var csv = "Date,ISO8601,Metric,Value,Unit\n"
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        
-        let iso8601Formatter = DateFormatter()
-        iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        let dateFormatter = createDateFormatter()
+        let iso8601Formatter = createISO8601Formatter()
         
         for sample in samples {
             let date = dateFormatter.string(from: sample.startDate)
@@ -21,11 +31,8 @@ class CSVGenerator {
     
     static func generateStepsCSV(from samples: [HKQuantitySample]) -> String {
         var csv = "Date,ISO8601,Metric,Value,Unit\n"
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        
-        let iso8601Formatter = DateFormatter()
-        iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        let dateFormatter = createDateFormatter()
+        let iso8601Formatter = createISO8601Formatter()
         
         for sample in samples {
             let date = dateFormatter.string(from: sample.startDate)
@@ -38,11 +45,8 @@ class CSVGenerator {
     
     static func generateCombinedCSV(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?, weightUnit: WeightUnit) -> String {
         var csv = "Date,ISO8601,Metric,Value,Unit\n"
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        
-        let iso8601Formatter = DateFormatter()
-        iso8601Formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        let dateFormatter = createDateFormatter()
+        let iso8601Formatter = createISO8601Formatter()
         
         if let weightSamples = weightSamples {
             for sample in weightSamples {
