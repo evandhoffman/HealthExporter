@@ -12,9 +12,10 @@ struct ShareSheet: UIViewControllerRepresentable {
             forTypeIdentifier: UTType.commaSeparatedText.identifier,
             fileOptions: .openInPlace,
             visibility: .all
-        ) { _ in
-            return (self.filePath, true)
-        }
+            ) { completion in
+                completion(self.filePath, true, nil)
+                return nil
+            }
         
         let activityVC = UIActivityViewController(activityItems: [itemProvider!], applicationActivities: nil)
         activityVC.excludedActivityTypes = [.saveToCameraRoll]
