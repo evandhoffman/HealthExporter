@@ -6,17 +6,19 @@ struct ShareSheet: UIViewControllerRepresentable {
     let fileName: String
     
     func makeUIViewController(context: Context) -> UIActivityViewController {
+        let csvUTI = UTType.commaSeparatedText.identifier
         let itemProvider = NSItemProvider(contentsOf: filePath)
         itemProvider?.suggestedName = fileName
+        // Register as CSV explicitly
         itemProvider?.registerFileRepresentation(
-            forTypeIdentifier: UTType.commaSeparatedText.identifier,
+            forTypeIdentifier: csvUTI,
             fileOptions: .openInPlace,
             visibility: .all
-            ) { completion in
-                completion(self.filePath, true, nil)
-                return nil
-            }
-        
+        ) { completion in
+            completion(self.filePath, true, nil)
+            return nil
+        }
+        // Also set the preferred type identifier for the activity item
         let activityVC = UIActivityViewController(activityItems: [itemProvider!], applicationActivities: nil)
         activityVC.excludedActivityTypes = [.saveToCameraRoll]
         return activityVC
