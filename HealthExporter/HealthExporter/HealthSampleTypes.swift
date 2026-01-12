@@ -6,12 +6,13 @@ struct A1CSamplePct {
     let value: Double // Percentage value (e.g., 6.8 for 6.8%)
     
     init?(from sample: HKQuantitySample) {
-        // Only accept samples that are compatible with percent unit
-        guard sample.quantity.is(compatibleWith: HKUnit.percent()) else {
+        self.startDate = sample.startDate
+        let percentValue = sample.quantity.doubleValue(for: HKUnit.percent())
+        // A1C values are typically 4-15%, reject values > 20% (likely mg/dL misinterpreted)
+        guard percentValue > 0 && percentValue <= 20 else {
             return nil
         }
-        self.startDate = sample.startDate
-        self.value = sample.quantity.doubleValue(for: HKUnit.percent())
+        self.value = percentValue
     }
 }
 
@@ -22,11 +23,12 @@ struct GlucoseSampleMgDl {
     
     init?(from sample: HKQuantitySample) {
         let glucoseUnit = HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci))
-        // Only accept samples that are compatible with mg/dL unit
-        guard sample.quantity.is(compatibleWith: glucoseUnit) else {
+        let mgDlValue = sample.quantity.doubleValue(for: glucoseUnit)
+        // Blood glucose values are typically 20-600 mg/dL, reject values < 20 (likely % misinterpreted)
+        guard mgDlValue >= 20 else {
             return nil
         }
         self.startDate = sample.startDate
-        self.value = sample.quantity.doubleValue(for: glucoseUnit)
+        self.value = mgDlValue
     }
 }

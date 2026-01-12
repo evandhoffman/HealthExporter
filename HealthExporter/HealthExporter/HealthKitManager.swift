@@ -12,7 +12,9 @@ class HealthKitManager {
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
         let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
         let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
-        let typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
+        let labResultType = HKObjectType.clinicalType(forIdentifier: .labResultRecord)!
+        
+        let typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType, labResultType]
         let typesToWrite: Set<HKSampleType> = [weightType, stepsType, glucoseType]
         
         healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { success, error in
@@ -91,7 +93,33 @@ class HealthKitManager {
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         let query = HKSampleQuery(sampleType: a1cType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
+            // Debug: Print raw sample data
+            if let samples = samples as? [HKQuantitySample] {
+                print("=== A1C Fetch - Total samples: \(samples.count) ===")
+                for (index, sample) in samples.prefix(5).enumerated() {
+                    print("Sample \(index):")
+                    print("  Date: \(sample.startDate)")
+                    print("  Quantity: \(sample.quantity)")
+                    print("  Type: \(sample.quantityType)")
+                    
+                    // Try both units
+                    let percentUnit = HKUnit.percent()
+                    let mgDlUnit = HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci))
+                    
+                    if sample.quantity.is(compatibleWith: percentUnit) {
+                        let percentValue = sample.quantity.doubleValue(for: percentUnit)
+                        print("  As percent: \(percentValue)%")
+                    }
+                    
+                    if sample.quantity.is(compatibleWith: mgDlUnit) {
+                        let mgDlValue = sample.quantity.doubleValue(for: mgDlUnit)
+                        print("  As mg/dL: \(mgDlValue)")
+                    }
+                }
+            }
+            
             let a1cSamples = (samples as? [HKQuantitySample])?.compactMap { A1CSamplePct(from: $0) }
+            print("A1C samples after filtering: \(a1cSamples?.count ?? 0)")
             completion(a1cSamples, error)
         }
         healthStore.execute(query)
@@ -111,7 +139,33 @@ class HealthKitManager {
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
+            // Debug: Print raw sample data
+            if let samples = samples as? [HKQuantitySample] {
+                print("=== Glucose Fetch - Total samples: \(samples.count) ===")
+                for (index, sample) in samples.prefix(5).enumerated() {
+                    print("Sample \(index):")
+                    print("  Date: \(sample.startDate)")
+                    print("  Quantity: \(sample.quantity)")
+                    print("  Type: \(sample.quantityType)")
+                    
+                    // Try both units
+                    let percentUnit = HKUnit.percent()
+                    let mgDlUnit = HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci))
+                    
+                    if sample.quantity.is(compatibleWith: percentUnit) {
+                        let percentValue = sample.quantity.doubleValue(for: percentUnit)
+                        print("  As percent: \(percentValue)%")
+                    }
+                    
+                    if sample.quantity.is(compatibleWith: mgDlUnit) {
+                        let mgDlValue = sample.quantity.doubleValue(for: mgDlUnit)
+                        print("  As mg/dL: \(mgDlValue)")
+                    }
+                }
+            }
+            
             let glucoseSamples = (samples as? [HKQuantitySample])?.compactMap { GlucoseSampleMgDl(from: $0) }
+            print("Glucose samples after filtering: \(glucoseSamples?.count ?? 0)")
             completion(glucoseSamples, error)
         }
         healthStore.execute(query)
@@ -157,11 +211,13 @@ class HealthKitManager {
             
             // Hemoglobin A1C sample (5.0-8.0%)
             let a1cValue = Double.random(in: 5.0...8.0)
+            let metadata: [String: Any] = [HKMetadataKeyWasUserEntered: true]
             let a1cSample = HKQuantitySample(
                 type: glucoseType,
                 quantity: HKQuantity(unit: HKUnit.percent(), doubleValue: a1cValue),
                 start: date,
-                end: date
+                end: date,
+                metadata: metadata
             )
             samples.append(a1cSample)
         }
@@ -173,11 +229,13 @@ class HealthKitManager {
             // Blood glucose sample (70-180 mg/dL)
             let glucoseValue = Double.random(in: 70.0...180.0)
             let glucoseUnit = HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci))
+            let metadata: [String: Any] = [HKMetadataKeyWasUserEntered: false]
             let glucoseSample = HKQuantitySample(
                 type: glucoseType,
                 quantity: HKQuantity(unit: glucoseUnit, doubleValue: glucoseValue),
                 start: date,
-                end: date
+                end: date,
+                metadata: metadata
             )
             samples.append(glucoseSample)
         }
