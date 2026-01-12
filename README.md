@@ -44,7 +44,7 @@ Date,ISO8601,Metric,Value,Unit
 2026-01-09 11:00:00,2026-01-09T11:00:00Z,Steps,5432,steps
 ```
 
-Filename format: `YYYY-MM-DD_HHMMSS_health_export.csv`
+Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 
 ## Requirements
 

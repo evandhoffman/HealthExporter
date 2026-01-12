@@ -83,7 +83,7 @@ Date,Metric,Value,Unit
 1/9/26, 11:00 AM,Steps,5432,steps
 ```
 
-Filename format: `YYYY-MM-DD_HHMMSS_health_export.csv`
+Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 
 ## Development Notes
 
