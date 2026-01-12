@@ -1,0 +1,13 @@
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/
+DerivedData/
+.DS_Store
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Secrets
+Secrets.plist

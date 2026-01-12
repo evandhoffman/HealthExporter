@@ -7,6 +7,7 @@ struct DataSelectionView: View {
     @State private var exportSteps = false
     @State private var showingExporter = false
     @State private var showingShareSheet = false
+    @State private var csvData: Data?
     @State private var csvContent = ""
     @State private var fileName = ""
     @State private var useAllData = false
@@ -139,7 +140,7 @@ struct DataSelectionView: View {
         }
     }
     
-    private func exportData(forSaving: Bool) {
+    private func exportData(forSaving: Bool = false) {
         healthManager.requestAuthorization { success, error in
             if success {
                 let dateRange = useAllData ? nil : (startDate, endDate)
