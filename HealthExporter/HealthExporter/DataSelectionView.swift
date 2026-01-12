@@ -5,6 +5,8 @@ import HealthKit
 struct DataSelectionView: View {
     @State private var exportWeight = true
     @State private var exportSteps = false
+    @State private var exportA1C = false
+    @State private var exportGlucose = false
     @State private var showingExporter = false
     @State private var showingShareSheet = false
     @State private var csvData: Data?
@@ -22,7 +24,7 @@ struct DataSelectionView: View {
     }
     
     private var hasSelectedMetric: Bool {
-        exportWeight || exportSteps
+        exportWeight || exportSteps || exportA1C || exportGlucose
     }
     
     private var canExport: Bool {
@@ -42,6 +44,16 @@ struct DataSelectionView: View {
             
             Toggle(isOn: $exportSteps) {
                 Text("Steps")
+            }
+            .padding(.horizontal)
+            
+            Toggle(isOn: $exportA1C) {
+                Text("Hemoglobin A1C (%)")
+            }
+            .padding(.horizontal)
+            
+            Toggle(isOn: $exportGlucose) {
+                Text("Blood Glucose (mg/dL)")
             }
             .padding(.horizontal)
             
@@ -147,6 +159,8 @@ struct DataSelectionView: View {
                 
                 var weightSamples: [HKQuantitySample]? = nil
                 var stepsSamples: [HKQuantitySample]? = nil
+                var a1cSamples: [A1CSamplePct]? = nil
+                var glucoseSamples: [GlucoseSampleMgDl]? = nil
                 let dispatchGroup = DispatchGroup()
                 
                 if exportWeight {
@@ -165,8 +179,24 @@ struct DataSelectionView: View {
                     }
                 }
                 
+                if exportA1C {
+                    dispatchGroup.enter()
+                    healthManager.fetchHemoglobinA1CData(dateRange: dateRange) { samples, error in
+                        a1cSamples = samples
+                        dispatchGroup.leave()
+                    }
+                }
+                
+                if exportGlucose {
+                    dispatchGroup.enter()
+                    healthManager.fetchBloodGlucoseDataTyped(dateRange: dateRange) { samples, error in
+                        glucoseSamples = samples
+                        dispatchGroup.leave()
+                    }
+                }
+                
                 dispatchGroup.notify(queue: .main) {
-                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, weightUnit: self.settings.weightUnit)
+                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, a1cSamples: a1cSamples, glucoseSamples: glucoseSamples, weightUnit: self.settings.weightUnit)
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
                     let dateString = dateFormatter.string(from: Date())
