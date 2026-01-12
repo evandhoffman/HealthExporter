@@ -182,7 +182,7 @@ struct DataSelectionView: View {
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
                     let dateString = dateFormatter.string(from: Date())
-                    fileName = "\(dateString)_health_export.csv"
+                    fileName = "HealthExporter_\(dateString).csv"
                     
                     if forSaving {
                         showingExporter = true
