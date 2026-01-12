@@ -16,8 +16,8 @@
 4. Fill in:
    - **App name**: HealthExporter
    - **Bundle ID**: `com.evanhoffman.HealthExporter` (from your Xcode project)
-5. Download the credentials file
-6. Copy your **Client ID** (looks like `xxxxx-xxxxxx.apps.googleusercontent.com`)
+5. Download the credentials file (Google will provide a `.plist` file with CLIENT_ID and REVERSED_CLIENT_ID)
+6. Copy your **Client ID** and **Reversed Client ID** from the downloaded file
 
 ## Step 4: Configure Secrets File
 
@@ -34,9 +34,15 @@
 
 1. Open your project in Xcode
 2. Go to **HealthExporter** target → **Info** tab
-3. Add a new URL type:
-   - **Identifier**: `com.google.IdentifierScheme`
-   - **URL Schemes**: Paste your Client ID (the full one, including `.apps.googleusercontent.com`)
+3. Scroll down to **URL Types** and add **two** new URL type entries:
+
+**First URL Type:**
+- **Identifier**: `com.google.IdentifierScheme`
+- **URL Schemes**: Your CLIENT_ID (e.g., `574799417596-q1cui35u0qb6fr9u7f4kftgl91kmhelf.apps.googleusercontent.com`)
+
+**Second URL Type:**
+- **Identifier**: `com.googleusercontent.apps`
+- **URL Schemes**: Your REVERSED_CLIENT_ID (e.g., `com.googleusercontent.apps.574799417596-q1cui35u0qb6fr9u7f4kftgl91kmhelf`)
 
 ## Step 6: Install CocoaPods
 

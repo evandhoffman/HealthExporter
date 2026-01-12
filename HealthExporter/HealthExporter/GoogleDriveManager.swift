@@ -6,7 +6,7 @@ class GoogleDriveManager: NSObject, ObservableObject {
     @Published var isSignedIn = false
     @Published var uploadProgress = ""
     
-    private var clientID: String {
+    private var clientID: String? {
         SecretsManager.shared.googleClientID()
     }
     
@@ -17,6 +17,10 @@ class GoogleDriveManager: NSObject, ObservableObject {
     }
     
     private func configureGoogleSignIn() {
+        guard let clientID = clientID else {
+            print("⚠️ Client ID not configured")
+            return
+        }
         GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
     }
     

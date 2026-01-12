@@ -11,7 +11,18 @@
 			<string>com.google.IdentifierScheme</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>574799417596-q1cui35u0qb6fr9u7f4kftgl91kmhelf.apps.googleusercontent.com</string>
+				<string>574799417596-q1cui35u0qb6fr9u7f4kftgl91kmhelf.apps.googleusercontent.com
+</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.googleusercontent.apps</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.574799417596-q1cui35u0qb6fr9u7f4kftgl91kmhelf</string>
 			</array>
 		</dict>
 	</array>
