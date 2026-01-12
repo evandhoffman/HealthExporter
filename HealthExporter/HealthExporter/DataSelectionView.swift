@@ -7,8 +7,6 @@ struct DataSelectionView: View {
     @State private var exportSteps = false
     @State private var showingExporter = false
     @State private var showingShareSheet = false
-    @State private var showingGoogleDriveAuth = false
-    @ObservedObject var googleDriveManager = GoogleDriveManager()
     @State private var csvData: Data?
     @State private var csvContent = ""
     @State private var fileName = ""
@@ -120,23 +118,6 @@ struct DataSelectionView: View {
                         .cornerRadius(10)
                 }
                 .disabled(!canExport)
-                
-                Button(action: {
-                    if googleDriveManager.isSignedIn {
-                        exportData(forGoogleDrive: true)
-                    } else {
-                        showingGoogleDriveAuth = true
-                    }
-                }) {
-                    Text(googleDriveManager.isSignedIn ? "Drive..." : "Auth...")
-                        .font(.title3)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(canExport ? Color.orange : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                .disabled(!canExport)
             }
             .padding()
         }
@@ -157,12 +138,9 @@ struct DataSelectionView: View {
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(filePath: saveToTemporaryLocation(), fileName: fileName)
         }
-        .sheet(isPresented: $showingGoogleDriveAuth) {
-            GoogleDriveSignInView(googleDriveManager: googleDriveManager, isPresented: $showingGoogleDriveAuth)
-        }
     }
     
-    private func exportData(forSaving: Bool = false, forGoogleDrive: Bool = false) {
+    private func exportData(forSaving: Bool = false) {
         healthManager.requestAuthorization { success, error in
             if success {
                 let dateRange = useAllData ? nil : (startDate, endDate)
@@ -196,16 +174,6 @@ struct DataSelectionView: View {
                     
                     if forSaving {
                         showingExporter = true
-                    } else if forGoogleDrive {
-                        if let csvData = csvContent.data(using: .utf8) {
-                            self.googleDriveManager.uploadFile(data: csvData, fileName: fileName) { success, error in
-                                if success {
-                                    print("Successfully uploaded to Google Drive")
-                                } else {
-                                    print("Failed to upload to Google Drive: \(error?.localizedDescription ?? "Unknown error")")
-                                }
-                            }
-                        }
                     } else {
                         showingShareSheet = true
                     }
