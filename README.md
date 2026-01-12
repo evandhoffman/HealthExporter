@@ -36,7 +36,7 @@ The exported CSV includes the following columns:
 - **Value**: Numeric value (weight formatted to 2 decimal places)
 - **Unit**: Unit of measurement (kg, lbs, steps)
 
-Filename format: `YYYY-MM-DD_HHMMSS_health_export.csv`
+Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 
 ## Requirements
 
