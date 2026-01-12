@@ -1,21 +1,5 @@
 import HealthKit
 
-// MARK: - A1C Sample Type
-struct A1CSamplePct {
-    let startDate: Date
-    let value: Double // Percentage value (e.g., 6.8 for 6.8%)
-    
-    init?(from sample: HKQuantitySample) {
-        self.startDate = sample.startDate
-        let percentValue = sample.quantity.doubleValue(for: HKUnit.percent())
-        // A1C values are typically 4-15%, reject values > 20% (likely mg/dL misinterpreted)
-        guard percentValue > 0 && percentValue <= 20 else {
-            return nil
-        }
-        self.value = percentValue
-    }
-}
-
 // MARK: - Glucose Sample Type
 struct GlucoseSampleMgDl {
     let startDate: Date
