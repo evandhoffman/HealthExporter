@@ -1,4 +1,4 @@
-platform :ios, '12.0'
+platform :ios, '26.1'
 
 target 'HealthExporter' do
 end
