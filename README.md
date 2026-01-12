@@ -31,10 +31,18 @@ An iOS app to export HealthKit data to CSV files.
 ## CSV Output Format
 
 The exported CSV includes the following columns:
-- **Date**: Timestamp of the measurement
+- **Date**: Timestamp of the measurement in Excel/Google Sheets friendly format (yyyy-MM-dd HH:mm:ss)
+- **ISO8601**: Timestamp in ISO8601 format (yyyy-MM-dd'T'HH:mm:ssZ)
 - **Metric**: Type of measurement (Weight, Steps)
 - **Value**: Numeric value (weight formatted to 2 decimal places)
 - **Unit**: Unit of measurement (kg, lbs, steps)
+
+Example:
+```
+Date,ISO8601,Metric,Value,Unit
+2026-01-09 10:30:00,2026-01-09T10:30:00Z,Weight,185.50,lbs
+2026-01-09 11:00:00,2026-01-09T11:00:00Z,Steps,5432,steps
+```
 
 Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 
