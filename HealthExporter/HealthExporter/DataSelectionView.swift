@@ -30,7 +30,10 @@ struct DataSelectionView: View {
     }
     
     private var hasSelectedMetric: Bool {
-        settings.exportWeight || settings.exportSteps || settings.exportGlucose || (BuildConfig.hasPaidDeveloperAccount && settings.exportA1C)
+        settings.exportWeight || 
+        settings.exportSteps || 
+        settings.exportGlucose || 
+        (HealthMetrics.a1c.isAvailable && settings.exportA1C)
     }
     
     private func updateExportEnabled() {
@@ -75,18 +78,27 @@ struct DataSelectionView: View {
             HStack {
                 HStack(spacing: 4) {
                     Text("Hemoglobin A1C (%)")
-                    if !BuildConfig.hasPaidDeveloperAccount {
+                    if !HealthMetrics.a1c.isAvailable {
                         Text("💰")
                             .font(.caption)
                     }
                 }
                 Spacer()
-                Toggle("", isOn: BuildConfig.hasPaidDeveloperAccount ? $settings.exportA1C : .constant(false))
-                    .labelsHidden()
+                Toggle("", isOn: Binding(
+                    get: { HealthMetrics.a1c.isAvailable && settings.exportA1C },
+                    set: { newValue in
+                        if HealthMetrics.a1c.isAvailable {
+                            settings.exportA1C = newValue
+                        } else {
+                            settings.exportA1C = false
+                        }
+                    }
+                ))
+                .labelsHidden()
             }
             .padding(.horizontal)
-            .opacity(BuildConfig.hasPaidDeveloperAccount ? 1.0 : 0.5)
-            .disabled(!BuildConfig.hasPaidDeveloperAccount)
+            .opacity(HealthMetrics.a1c.isAvailable ? 1.0 : 0.5)
+            .disabled(!HealthMetrics.a1c.isAvailable)
             
             Divider()
                 .padding()
