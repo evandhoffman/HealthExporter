@@ -73,6 +73,15 @@ class SettingsManager: ObservableObject {
         self.exportWeight = UserDefaults.standard.object(forKey: "exportWeight") as? Bool ?? true
         self.exportSteps = UserDefaults.standard.object(forKey: "exportSteps") as? Bool ?? true
         self.exportGlucose = UserDefaults.standard.object(forKey: "exportGlucose") as? Bool ?? false
-        self.exportA1C = UserDefaults.standard.object(forKey: "exportA1C") as? Bool ?? false
+        
+        // A1C: Only enable if available AND user preference says so
+        // Force to false if not available (free tier account)
+        if HealthMetrics.a1c.isAvailable {
+            self.exportA1C = UserDefaults.standard.object(forKey: "exportA1C") as? Bool ?? false
+        } else {
+            self.exportA1C = false
+            // Clear from UserDefaults to prevent confusion
+            UserDefaults.standard.set(false, forKey: "exportA1C")
+        }
     }
 }

@@ -24,6 +24,7 @@ HealthExporter/
 │       ├── SettingsView.swift        # Settings panel for unit preferences
 │       ├── SettingsManager.swift     # Settings persistence with UserDefaults
 │       ├── HealthKitManager.swift    # HealthKit authorization & queries
+│       ├── HealthMetricConfig.swift  # Metric configuration with availability rules
 │       ├── CSVGenerator.swift        # CSV string generation with unit conversion
 │       ├── CSVDocument.swift         # FileDocument for SwiftUI fileExporter
 │       ├── ShareSheet.swift          # UIActivityViewController wrapper
@@ -41,6 +42,7 @@ HealthExporter/
 ### Managers
 - **HealthKitManager**: Handles HealthKit authorization and data fetching with optional date range filtering
 - **SettingsManager**: ObservableObject that persists unit preferences via UserDefaults
+- **HealthMetricConfig**: Defines metric metadata including `requiresPaidAccount` flag and availability checks
 
 ### Utilities
 - **CSVGenerator**: Converts HKQuantitySample arrays to CSV strings with unit conversion
@@ -67,10 +69,14 @@ HealthExporter/
 
 ## Supported Health Metrics
 
-| Metric | HealthKit Identifier | Units |
-|--------|---------------------|-------|
-| Weight | `.bodyMass` | kg, lbs |
-| Steps | `.stepCount` | count |
+| Metric | HealthKit Identifier | Units | Requires Paid Account |
+|--------|---------------------|-------|----------------------|
+| Weight | `.bodyMass` | kg, lbs | No |
+| Steps | `.stepCount` | count | No |
+| Blood Glucose | `.bloodGlucose` | mg/dL | No |
+| Hemoglobin A1C | `.labResultRecord` (Clinical) | % | Yes |
+
+**Important**: Metric availability is centrally managed in `HealthMetricConfig.swift`. Each metric has a `requiresPaidAccount` boolean that determines if it's available based on `BuildConfig.hasPaidDeveloperAccount`.
 
 ## CSV Output Format
 
@@ -92,6 +98,34 @@ Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 - Weight values are formatted to 2 decimal places
 - Default date range is past 30 days; "All Data" toggle disables filtering
 - Settings auto-save on change (no save button needed)
+
+### Metric Availability Pattern
+
+**CRITICAL**: When adding metrics that require paid features:
+
+1. Define the metric in `HealthMetricConfig.swift` with `requiresPaidAccount: true/false`
+2. Use `HealthMetrics.{metric}.isAvailable` to check availability everywhere
+3. In `DataSelectionView`, use a custom `Binding` that:
+   - Returns `false` when metric is unavailable (even if stored setting is `true`)
+   - Only allows setting to `true` if metric is available
+   - Forces value to `false` if unavailable
+4. In `SettingsManager.init()`, force unavailable metrics to `false` and clear from UserDefaults
+5. In `hasSelectedMetric`, only count metrics where `isAvailable && setting == true`
+6. This prevents UI/state mismatches where disabled metrics appear selected
+
+**Example** (A1C toggle in DataSelectionView):
+```swift
+Toggle("", isOn: Binding(
+    get: { HealthMetrics.a1c.isAvailable && settings.exportA1C },
+    set: { newValue in
+        if HealthMetrics.a1c.isAvailable {
+            settings.exportA1C = newValue
+        } else {
+            settings.exportA1C = false
+        }
+    }
+))
+```
 
 ## Memory Optimization Directive
 
@@ -121,13 +155,15 @@ Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 ## Future Expansion
 
 When adding new health data types:
-1. Add new quantity type identifiers in `HealthKitManager.requestAuthorization()`
-2. Create new fetch methods in `HealthKitManager` for each data type
-3. Add corresponding toggle switches in `DataSelectionView`
-4. Extend `CSVGenerator.generateCombinedCSV()` with the new data type
-5. Add unit conversion logic if applicable
-6. Update SettingsManager/SettingsView if new unit preferences are needed
-7. **Ensure new data types follow memory optimization practices** - release samples after CSV generation
+1. Add the metric to `HealthMetricConfig.swift` with appropriate `requiresPaidAccount` value
+2. Add new quantity type identifiers in `HealthKitManager.requestAuthorization()` (only if available)
+3. Create new fetch methods in `HealthKitManager` for each data type
+4. Add corresponding toggle in `DataSelectionView` using the metric availability pattern (see Development Notes)
+5. Extend `CSVGenerator.generateCombinedCSV()` with the new data type
+6. Add unit conversion logic if applicable
+7. Update SettingsManager initialization to handle unavailable metrics (force to false)
+8. Update SettingsManager/SettingsView if new unit preferences are needed
+9. **Ensure new data types follow memory optimization practices** - release samples after CSV generation
 
 ## Code Style
 

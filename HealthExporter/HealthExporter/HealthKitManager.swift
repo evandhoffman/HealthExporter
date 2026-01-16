@@ -18,9 +18,11 @@ class HealthKitManager {
         // Clinical Records for Hemoglobin A1C (requires iOS 15.0+)
         // NOTE: Requires 'NSHealthClinicalHealthRecordsShareUsageDescription' in Info.plist
         // Only add if available and provisioning profile supports it
-        if #available(iOS 15.0, *) {
-            if let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
-                typesToRead.insert(clinicalType)
+        if BuildConfig.hasPaidDeveloperAccount {
+            if #available(iOS 15.0, *) {
+                if let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
+                    typesToRead.insert(clinicalType)
+                }
             }
         }
         
@@ -31,7 +33,7 @@ class HealthKitManager {
         }
     }
     
-    func fetchWeightData(dateRange: (startDate: Date, endDate: Date)? = nil, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
+    func fetchWeightData(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
         
         var predicate: NSPredicate? = nil
@@ -44,13 +46,13 @@ class HealthKitManager {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-        let query = HKSampleQuery(sampleType: weightType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
+        let query = HKSampleQuery(sampleType: weightType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
             completion(samples as? [HKQuantitySample], error)
         }
         healthStore.execute(query)
     }
     
-    func fetchStepsData(dateRange: (startDate: Date, endDate: Date)? = nil, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
+    func fetchStepsData(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
         let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
         
         var predicate: NSPredicate? = nil
@@ -63,13 +65,13 @@ class HealthKitManager {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-        let query = HKSampleQuery(sampleType: stepsType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
+        let query = HKSampleQuery(sampleType: stepsType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
             completion(samples as? [HKQuantitySample], error)
         }
         healthStore.execute(query)
     }
     
-    func fetchBloodGlucoseData(dateRange: (startDate: Date, endDate: Date)? = nil, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
+    func fetchBloodGlucoseData(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
         let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
         
         var predicate: NSPredicate? = nil
@@ -82,13 +84,13 @@ class HealthKitManager {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-        let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
+        let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
             completion(samples as? [HKQuantitySample], error)
         }
         healthStore.execute(query)
     }
     
-    func fetchBloodGlucoseDataTyped(dateRange: (startDate: Date, endDate: Date)? = nil, completion: @escaping ([GlucoseSampleMgDl]?, Error?) -> Void) {
+    func fetchBloodGlucoseDataTyped(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([GlucoseSampleMgDl]?, Error?) -> Void) {
         let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
         
         var predicate: NSPredicate? = nil
@@ -101,7 +103,7 @@ class HealthKitManager {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-        let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
+        let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
             // Debug: Print raw sample data
             if let samples = samples as? [HKQuantitySample] {
                 print("=== Glucose Fetch - Total samples: \(samples.count) ===")
