@@ -48,10 +48,21 @@ struct DataSelectionView: View {
             }
             .padding(.horizontal)
             
-            Toggle(isOn: $settings.exportA1C) {
-                Text("Hemoglobin A1C (%)")
+            HStack {
+                HStack(spacing: 4) {
+                    Text("Hemoglobin A1C (%)")
+                    if !BuildConfig.hasPaidDeveloperAccount {
+                        Text("💰")
+                            .font(.caption)
+                    }
+                }
+                Spacer()
+                Toggle("", isOn: BuildConfig.hasPaidDeveloperAccount ? $settings.exportA1C : .constant(false))
+                    .labelsHidden()
             }
             .padding(.horizontal)
+            .opacity(BuildConfig.hasPaidDeveloperAccount ? 1.0 : 0.5)
+            .disabled(!BuildConfig.hasPaidDeveloperAccount)
             
             Divider()
                 .padding()

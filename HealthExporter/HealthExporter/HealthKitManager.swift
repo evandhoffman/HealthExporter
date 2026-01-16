@@ -13,10 +13,11 @@ class HealthKitManager {
         let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
         let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
         
-        // Clinical Records for Hemoglobin A1C (HKClinicalTypeIdentifierLabResultRecord)
-        // NOTE: Requires 'NSHealthClinicalHealthRecordsShareUsageDescription' in Info.plist
-        // and 'Clinical Health Records' capability enabled in Xcode signing & capabilities
         var typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
+        
+        // Clinical Records for Hemoglobin A1C (requires iOS 15.0+)
+        // NOTE: Requires 'NSHealthClinicalHealthRecordsShareUsageDescription' in Info.plist
+        // Only add if available and provisioning profile supports it
         if #available(iOS 15.0, *) {
             if let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
                 typesToRead.insert(clinicalType)
