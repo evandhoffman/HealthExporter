@@ -3,6 +3,8 @@
 ## Overview
 Hemoglobin A1C export capability has been successfully added to HealthExporter. This feature allows users to export their A1C lab results from HealthKit's Clinical Records.
 
+> Testing status: This A1C functionality is currently untested end-to-end because there is no paid Apple Developer account available to enable Clinical Health Records during development. The implementation is present and behind capability checks, but it has not been validated on-device.
+
 ## Implementation Details
 
 ### 1. Data Model (HealthSampleTypes.swift)

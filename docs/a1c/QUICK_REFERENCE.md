@@ -1,5 +1,7 @@
 # ✅ Hemoglobin A1C Implementation - Quick Reference
 
+> Testing status: A1C export is currently untested end-to-end because there is no paid Apple Developer account available to enable Clinical Health Records during development. The code compiles but has not been verified on-device.
+
 ## What Was Added
 
 ### New Data Model

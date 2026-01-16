@@ -105,6 +105,10 @@ Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 - Default date range is past 30 days; "All Data" toggle disables filtering
 - Settings auto-save on change (no save button needed)
 
+### Testing Status
+
+- Hemoglobin A1C export is currently untested end-to-end because there is no paid Apple Developer account available to enable Clinical Health Records during development. Treat A1C functionality as experimental until verified on-device with the capability enabled.
+
 ### Metric Availability Pattern
 
 **CRITICAL**: When adding metrics that require paid features:

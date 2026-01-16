@@ -55,6 +55,10 @@ Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 - HealthKit access permission
  - Clinical Health Records capability and user permission (for A1C export; paid account required)
 
+## Testing Status
+
+- Hemoglobin A1C export is currently untested end-to-end because there is no paid Apple Developer account available to enable Clinical Health Records during development. The code compiles and is gated behind availability checks, but it has not been verified on-device.
+
 ## Project Structure
 
 ```
