@@ -8,7 +8,7 @@ HealthExporter is an iOS app built with SwiftUI that exports HealthKit data to C
 
 - **Language**: Swift 5
 - **UI Framework**: SwiftUI
-- **Platform**: iOS 26.1+
+- **Platform**: iOS 26+ (build targets iOS 26 and above only)
 - **Frameworks**: HealthKit, UniformTypeIdentifiers, Combine
 
 ## Project Structure
@@ -36,7 +36,7 @@ HealthExporter/
 
 ### Views
 - **SplashView**: Welcome screen with "Next" button and gear icon for Settings
-- **DataSelectionView**: Main screen with metric toggles (Weight, Steps), date pickers, and Save/Share buttons
+- **DataSelectionView**: Main screen with metric toggles (Weight, Steps, Blood Glucose, A1C), date pickers, and Save/Share buttons
 - **SettingsView**: Unit preference configuration (Temperature, Weight, Distance/Speed)
 
 ### Managers
@@ -51,7 +51,7 @@ HealthExporter/
 
 ## Key Patterns
 
-1. **Navigation**: Uses NavigationView with NavigationLink for screen transitions
+1. **Navigation**: Uses NavigationStack with NavigationLink for screen transitions (no deprecated APIs)
 2. **File Export**: Two options:
    - SwiftUI's `.fileExporter()` modifier for Save functionality
    - UIActivityViewController (via ShareSheet) for Share functionality
@@ -63,9 +63,11 @@ HealthExporter/
 ## Required Capabilities
 
 - **HealthKit**: Must be enabled in Signing & Capabilities
+- **Clinical Health Records** (A1C): Enable capability if `BuildConfig.hasPaidDeveloperAccount == true`
 - **Info.plist Keys** (set via Build Settings as INFOPLIST_KEY_*):
-  - `NSHealthShareUsageDescription`
-  - `NSHealthUpdateUsageDescription`
+    - `NSHealthShareUsageDescription`
+    - `NSHealthUpdateUsageDescription`
+    - `NSHealthClinicalHealthRecordsShareUsageDescription` (required for A1C export)
 
 ## Supported Health Metrics
 
@@ -74,19 +76,23 @@ HealthExporter/
 | Weight | `.bodyMass` | kg, lbs | No |
 | Steps | `.stepCount` | count | No |
 | Blood Glucose | `.bloodGlucose` | mg/dL | No |
-| Hemoglobin A1C | `.labResultRecord` (Clinical) | % | Yes |
+| Hemoglobin A1C | `.labResultRecord` (Clinical) | % | Yes (paid account required) |
 
 **Important**: Metric availability is centrally managed in `HealthMetricConfig.swift`. Each metric has a `requiresPaidAccount` boolean that determines if it's available based on `BuildConfig.hasPaidDeveloperAccount`.
 
 ## CSV Output Format
 
-Columns: `Date, Metric, Value, Unit`
+Columns: `Date, ISO8601, Metric, Value, Unit`
+
+Formatting:
+- **Date**: `yyyy-MM-dd HH:mm:ss`
+- **ISO8601**: `yyyy-MM-dd'T'HH:mm:ssZ` (UTC/Zulu)
 
 Example:
 ```
-Date,Metric,Value,Unit
-1/9/26, 10:30 AM,Weight,185.50,lbs
-1/9/26, 11:00 AM,Steps,5432,steps
+Date,ISO8601,Metric,Value,Unit
+2026-01-09 10:30:00,2026-01-09T10:30:00Z,Weight,185.50,lbs
+2026-01-09 11:00:00,2026-01-09T11:00:00Z,Steps,5432,steps
 ```
 
 Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
@@ -137,7 +143,7 @@ Toggle("", isOn: Binding(
 - Only keep in-memory what's actively being used
 
 ### CSV Generation
-- **Use array joining instead of string concatenation** - `lines.joined(separator: "\n")` is more memory-efficient than repeated `+=` operations
+- **Use array joining instead of string concatenation**: `lines.joined(separator: "\n")` is used in the combined CSV generator
 - Pre-allocate array capacity when known: `lines.reserveCapacity(lines.capacity + samples.count)`
 - Build as strings first, then join once
 

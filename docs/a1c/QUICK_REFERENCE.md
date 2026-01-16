@@ -53,9 +53,8 @@ Add this key (adjust description as needed):
 
 ### 3. iOS Version
 
-- **Minimum**: iOS 15.0 for clinical records support
-- Works on: iOS 16.x and iOS 17.x
-- Earlier iOS versions: Feature returns error, other exports continue working
+- **Minimum**: iOS 26+
+- Earlier iOS versions: Not supported (the app targets iOS 26+ only)
 
 ---
 
@@ -71,13 +70,13 @@ Add this key (adjust description as needed):
 | Default Value | Format: 2 decimal places (e.g., 7.50) |
 | Unit | From FHIR (typically "%") |
 | Date Range | Supported (post-query filtering) |
-| iOS Requirement | 15.0+ |
+| iOS Requirement | 26+ |
 
 ---
 
 ## 🧪 Testing on Device
 
-1. **Physical iOS 15.0+ Device Required**
+1. **Physical iOS 26+ Device Required**
    - Simulator does not support clinical records
 
 2. **Health App Sync**
@@ -131,7 +130,7 @@ Add this key (adjust description as needed):
 3. **Error Handling**
    - Invalid FHIR resources are filtered out
    - Records without code 4548-4 are ignored
-   - Graceful degradation on iOS < 15.0
+   - The app targets iOS 26+ only; earlier versions are unsupported
 
 4. **No Breaking Changes**
    - All existing features unaffected

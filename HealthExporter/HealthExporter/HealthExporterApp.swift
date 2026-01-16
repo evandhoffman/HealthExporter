@@ -6,7 +6,7 @@ struct HealthExporterApp: App {
     
     var body: some Scene {
         WindowGroup {
-            NavigationView {
+            NavigationStack {
                 SplashView(settings: settings)
             }
         }
