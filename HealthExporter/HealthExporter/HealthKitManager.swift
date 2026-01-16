@@ -13,7 +13,16 @@ class HealthKitManager {
         let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
         let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
         
-        let typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
+        // Clinical Records for Hemoglobin A1C (HKClinicalTypeIdentifierLabResultRecord)
+        // NOTE: Requires 'NSHealthClinicalHealthRecordsShareUsageDescription' in Info.plist
+        // and 'Clinical Health Records' capability enabled in Xcode signing & capabilities
+        var typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
+        if #available(iOS 15.0, *) {
+            if let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
+                typesToRead.insert(clinicalType)
+            }
+        }
+        
         let typesToWrite: Set<HKSampleType> = [weightType, stepsType, glucoseType]
         
         healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { success, error in
@@ -120,6 +129,47 @@ class HealthKitManager {
             let glucoseSamples = (samples as? [HKQuantitySample])?.compactMap { GlucoseSampleMgDl(from: $0) }
             print("Glucose samples after filtering: \(glucoseSamples?.count ?? 0)")
             completion(glucoseSamples, error)
+        }
+        healthStore.execute(query)
+    }
+    
+    func fetchA1CData(dateRange: (startDate: Date, endDate: Date)? = nil, completion: @escaping ([A1CSample]?, Error?) -> Void) {
+        // Requires iOS 15.0+ for clinical records
+        guard #available(iOS 15.0, *) else {
+            completion(nil, NSError(domain: "HealthKit", code: 2, userInfo: [NSLocalizedDescriptionKey: "Clinical Records require iOS 15.0 or later"]))
+            return
+        }
+        
+        guard let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) else {
+            completion(nil, NSError(domain: "HealthKit", code: 3, userInfo: [NSLocalizedDescriptionKey: "Clinical Lab Result type not available"]))
+            return
+        }
+        
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+        let query = HKSampleQuery(sampleType: clinicalType, predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, records, error in
+            guard error == nil else {
+                completion(nil, error)
+                return
+            }
+            
+            let a1cSamples = (records as? [HKClinicalRecord])?.compactMap { record -> A1CSample? in
+                let sample = A1CSample(from: record)
+                
+                // Apply date range filtering if provided
+                if let dateRange = dateRange, let sample = sample {
+                    let calendar = Calendar.current
+                    let startOfDay = calendar.startOfDay(for: dateRange.startDate)
+                    let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate))!
+                    if sample.effectiveDateTime >= startOfDay && sample.effectiveDateTime < endOfDay {
+                        return sample
+                    }
+                    return nil
+                }
+                
+                return sample
+            } ?? []
+            
+            completion(a1cSamples, nil)
         }
         healthStore.execute(query)
     }

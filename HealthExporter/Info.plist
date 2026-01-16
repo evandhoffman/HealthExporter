@@ -4,5 +4,7 @@
 <dict>
 	<key>NSHealthShareUsageDescription</key>
 	<string>HealthExporter needs access to your health data to export your weight, steps, and glucose measurements.</string>
+	<key>NSHealthClinicalHealthRecordsShareUsageDescription</key>
+	<string>HealthExporter needs access to your clinical health records to export your Hemoglobin A1C results.</string>
 </dict>
 </plist>
