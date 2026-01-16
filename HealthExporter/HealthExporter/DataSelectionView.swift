@@ -20,7 +20,7 @@ struct DataSelectionView: View {
     }
     
     private var hasSelectedMetric: Bool {
-        settings.exportWeight || settings.exportSteps || settings.exportGlucose
+        settings.exportWeight || settings.exportSteps || settings.exportGlucose || settings.exportA1C
     }
     
     private var canExport: Bool {
@@ -47,6 +47,22 @@ struct DataSelectionView: View {
                 Text("Blood Glucose (mg/dL)")
             }
             .padding(.horizontal)
+            
+            HStack {
+                HStack(spacing: 4) {
+                    Text("Hemoglobin A1C (%)")
+                    if !BuildConfig.hasPaidDeveloperAccount {
+                        Text("💰")
+                            .font(.caption)
+                    }
+                }
+                Spacer()
+                Toggle("", isOn: BuildConfig.hasPaidDeveloperAccount ? $settings.exportA1C : .constant(false))
+                    .labelsHidden()
+            }
+            .padding(.horizontal)
+            .opacity(BuildConfig.hasPaidDeveloperAccount ? 1.0 : 0.5)
+            .disabled(!BuildConfig.hasPaidDeveloperAccount)
             
             Divider()
                 .padding()
@@ -163,6 +179,7 @@ struct DataSelectionView: View {
                 var weightSamples: [HKQuantitySample]? = nil
                 var stepsSamples: [HKQuantitySample]? = nil
                 var glucoseSamples: [GlucoseSampleMgDl]? = nil
+                var a1cSamples: [A1CSample]? = nil
                 let dispatchGroup = DispatchGroup()
                 
                 if settings.exportWeight {
@@ -189,13 +206,22 @@ struct DataSelectionView: View {
                     }
                 }
                 
+                if settings.exportA1C {
+                    dispatchGroup.enter()
+                    healthManager.fetchA1CData(dateRange: dateRange) { samples, error in
+                        a1cSamples = samples
+                        dispatchGroup.leave()
+                    }
+                }
+                
                 dispatchGroup.notify(queue: .main) {
-                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, weightUnit: self.settings.weightUnit)
+                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, a1cSamples: a1cSamples, weightUnit: self.settings.weightUnit)
                     
                     // Clear sample arrays immediately after CSV generation
                     weightSamples = nil
                     stepsSamples = nil
                     glucoseSamples = nil
+                    a1cSamples = nil
                     
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"

@@ -53,6 +53,12 @@ class SettingsManager: ObservableObject {
         }
     }
     
+    @Published var exportA1C: Bool {
+        didSet {
+            UserDefaults.standard.set(exportA1C, forKey: "exportA1C")
+        }
+    }
+    
     init() {
         let tempUnitRaw = UserDefaults.standard.string(forKey: "temperatureUnit") ?? TemperatureUnit.celsius.rawValue
         self.temperatureUnit = TemperatureUnit(rawValue: tempUnitRaw) ?? .celsius
@@ -67,5 +73,6 @@ class SettingsManager: ObservableObject {
         self.exportWeight = UserDefaults.standard.object(forKey: "exportWeight") as? Bool ?? true
         self.exportSteps = UserDefaults.standard.object(forKey: "exportSteps") as? Bool ?? true
         self.exportGlucose = UserDefaults.standard.object(forKey: "exportGlucose") as? Bool ?? false
+        self.exportA1C = UserDefaults.standard.object(forKey: "exportA1C") as? Bool ?? false
     }
 }

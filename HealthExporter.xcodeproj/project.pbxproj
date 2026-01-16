@@ -346,7 +346,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HealthExporter/Info.plist;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to your health data to export your weight history to a CSV file.";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "HealthExporter needs access to your clinical health records to export your Hemoglobin A1C results.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "HealthExporter needs access to your health data to export your weight, steps, and glucose measurements.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need permission to read your health data.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -382,7 +383,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HealthExporter/Info.plist;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to your health data to export your weight history to a CSV file.";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "HealthExporter needs access to your clinical health records to export your Hemoglobin A1C results.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "HealthExporter needs access to your health data to export your weight, steps, and glucose measurements.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need permission to read your health data.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
