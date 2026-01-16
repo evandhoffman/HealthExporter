@@ -5,12 +5,12 @@ import HealthKit
 struct DataSelectionView: View {
     @State private var showingExporter = false
     @State private var showingShareSheet = false
-    @State private var csvData: Data?
     @State private var csvContent = ""
     @State private var fileName = ""
     @State private var useAllData = false
     @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
     @State private var endDate = Date()
+    @State private var showingSaveSuccess = false
     
     @ObservedObject var settings: SettingsManager
     let healthManager = HealthKitManager()
@@ -134,12 +134,24 @@ struct DataSelectionView: View {
             switch result {
             case .success(let url):
                 print("File saved to: \(url)")
+                showingSaveSuccess = true
+                // Clear data from memory after successful save
+                csvContent = ""
             case .failure(let error):
                 print("Error saving file: \(error)")
             }
         }
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(filePath: saveToTemporaryLocation(), fileName: fileName)
+        }
+        .onDisappear {
+            // Clear data from memory when view disappears
+            csvContent = ""
+        }
+        .alert("File saved!", isPresented: $showingSaveSuccess) {
+            Button("Ok!") {
+                showingSaveSuccess = false
+            }
         }
     }
     
@@ -179,6 +191,12 @@ struct DataSelectionView: View {
                 
                 dispatchGroup.notify(queue: .main) {
                     csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, weightUnit: self.settings.weightUnit)
+                    
+                    // Clear sample arrays immediately after CSV generation
+                    weightSamples = nil
+                    stepsSamples = nil
+                    glucoseSamples = nil
+                    
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
                     let dateString = dateFormatter.string(from: Date())

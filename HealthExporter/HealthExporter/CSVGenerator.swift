@@ -40,36 +40,39 @@ class CSVGenerator {
     }
     
     static func generateCombinedCSV(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?, glucoseSamples: [GlucoseSampleMgDl]?, weightUnit: WeightUnit) -> String {
-        var csv = "Date,ISO8601,Metric,Value,Unit\n"
+        var lines: [String] = ["Date,ISO8601,Metric,Value,Unit"]
         
         if let weightSamples = weightSamples {
+            lines.reserveCapacity(lines.capacity + weightSamples.count)
             for sample in weightSamples {
                 let date = dateFormatter.string(from: sample.startDate)
                 let iso8601 = iso8601Formatter.string(from: sample.startDate)
                 let weightKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
                 let (value, unitString) = convertWeight(weightKg, to: weightUnit)
-                csv += "\(date),\(iso8601),Weight,\(String(format: "%.2f", value)),\(unitString)\n"
+                lines.append("\(date),\(iso8601),Weight,\(String(format: "%.2f", value)),\(unitString)")
             }
         }
         
         if let stepsSamples = stepsSamples {
+            lines.reserveCapacity(lines.capacity + stepsSamples.count)
             for sample in stepsSamples {
                 let date = dateFormatter.string(from: sample.startDate)
                 let iso8601 = iso8601Formatter.string(from: sample.startDate)
                 let steps = sample.quantity.doubleValue(for: HKUnit.count())
-                csv += "\(date),\(iso8601),Steps,\(Int(steps)),steps\n"
+                lines.append("\(date),\(iso8601),Steps,\(Int(steps)),steps")
             }
         }
 
         if let glucoseSamples = glucoseSamples {
+            lines.reserveCapacity(lines.capacity + glucoseSamples.count)
             for sample in glucoseSamples {
                 let date = dateFormatter.string(from: sample.startDate)
                 let iso8601 = iso8601Formatter.string(from: sample.startDate)
-                csv += "\(date),\(iso8601),Blood Glucose,\(String(format: "%.0f", sample.value)),mg/dL\n"
+                lines.append("\(date),\(iso8601),Blood Glucose,\(String(format: "%.0f", sample.value)),mg/dL")
             }
         }
         
-        return csv
+        return lines.joined(separator: "\n") + "\n"
     }
     
     private static func convertWeight(_ weightKg: Double, to unit: WeightUnit) -> (Double, String) {
