@@ -8,7 +8,7 @@ struct SettingsView: View {
     let healthManager = HealthKitManager()
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 Form {
                     Section(header: Text("Units")) {

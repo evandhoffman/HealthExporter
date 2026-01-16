@@ -19,9 +19,8 @@ Added `A1CSample` struct that:
 ### 2. HealthKit Manager (HealthKitManager.swift)
 
 #### Authorization Request Updated
-- Now requests `HKClinicalTypeIdentifier.labResultRecord` permission (iOS 15.0+)
-- Added version check: `#available(iOS 15.0, *)`
-- Maintains backward compatibility with older iOS versions
+- Requests `HKClinicalTypeIdentifier.labResultRecord` permission
+- App targets iOS 26+ only; no deprecated APIs used
 
 #### New Fetch Method: `fetchA1CData()`
 ```swift
@@ -70,9 +69,8 @@ Add this key to your `Info.plist`:
 6. Ensure **HealthKit** capability is also present
 
 ### iOS Version Requirement
-- A1C export requires **iOS 15.0 or later**
-- Feature gracefully degrades on older iOS versions (error returned)
-- Other export features (Weight, Steps, Blood Glucose) continue to work
+- A1C export requires **iOS 26+** (app minimum target)
+- Earlier iOS versions are unsupported
 
 ## API Details
 
@@ -108,13 +106,13 @@ The implementation includes comprehensive error handling:
 - Returns `nil` if FHIR resource cannot be parsed
 - Returns `nil` if LOINC code 4548-4 is not found
 - Returns `nil` if required fields (effectiveDateTime, valueQuantity) are missing
-- Graceful degradation on iOS < 15.0
+- The app targets iOS 26+ only; earlier versions are unsupported
 
 ## Testing Notes
 
 ### Simulator
 - Clinical Records functionality is **not available** on iOS simulator
-- Must test on a physical iOS 15.0+ device
+- Must test on a physical iOS 26+ device
 - The Health app on the device must have clinical records synced
 
 ### Physical Device
