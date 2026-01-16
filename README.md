@@ -12,7 +12,26 @@ An iOS app to export HealthKit data to CSV files.
   - **Save**: Save directly to Files app
   - **Share**: Share via iOS share sheet (Dropbox, Google Drive, email, etc.)
 - **Settings persistence**: Unit preferences are automatically saved
- - **Availability rules**: A1C export requires Clinical Health Records capability and a paid Apple Developer account
+- **Availability rules**: A1C export requires Clinical Health Records capability and a paid Apple Developer account
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>Splash Screen</strong><br>
+      <img src="assets/splash_screen.PNG" alt="Splash Screen" style="border: 1px solid black; width: 300px;">
+    </td>
+    <td align="center">
+      <strong>Metric Selector</strong><br>
+      <img src="assets/metric_selector.PNG" alt="Metric Selector" style="border: 1px solid black; width: 300px;">
+    </td>
+    <td align="center">
+      <strong>Settings</strong><br>
+      <img src="assets/settings.PNG" alt="Settings" style="border: 1px solid black; width: 300px;">
+    </td>
+  </tr>
+</table>
 
 ## Setup
 
