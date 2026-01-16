@@ -39,7 +39,7 @@ class CSVGenerator {
         return csv
     }
     
-    static func generateCombinedCSV(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?, weightUnit: WeightUnit) -> String {
+    static func generateCombinedCSV(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?, glucoseSamples: [GlucoseSampleMgDl]?, weightUnit: WeightUnit) -> String {
         var csv = "Date,ISO8601,Metric,Value,Unit\n"
         
         if let weightSamples = weightSamples {
@@ -58,6 +58,14 @@ class CSVGenerator {
                 let iso8601 = iso8601Formatter.string(from: sample.startDate)
                 let steps = sample.quantity.doubleValue(for: HKUnit.count())
                 csv += "\(date),\(iso8601),Steps,\(Int(steps)),steps\n"
+            }
+        }
+
+        if let glucoseSamples = glucoseSamples {
+            for sample in glucoseSamples {
+                let date = dateFormatter.string(from: sample.startDate)
+                let iso8601 = iso8601Formatter.string(from: sample.startDate)
+                csv += "\(date),\(iso8601),Blood Glucose,\(String(format: "%.0f", sample.value)),mg/dL\n"
             }
         }
         
