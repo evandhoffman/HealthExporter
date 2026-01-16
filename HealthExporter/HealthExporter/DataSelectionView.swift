@@ -3,16 +3,14 @@ import UniformTypeIdentifiers
 import HealthKit
 
 struct DataSelectionView: View {
-    @State private var exportWeight = true
-    @State private var exportSteps = false
     @State private var showingExporter = false
     @State private var showingShareSheet = false
-    @State private var csvData: Data?
     @State private var csvContent = ""
     @State private var fileName = ""
     @State private var useAllData = false
     @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
     @State private var endDate = Date()
+    @State private var showingSaveSuccess = false
     
     @ObservedObject var settings: SettingsManager
     let healthManager = HealthKitManager()
@@ -22,7 +20,7 @@ struct DataSelectionView: View {
     }
     
     private var hasSelectedMetric: Bool {
-        exportWeight || exportSteps
+        settings.exportWeight || settings.exportSteps || settings.exportGlucose
     }
     
     private var canExport: Bool {
@@ -35,13 +33,18 @@ struct DataSelectionView: View {
                 .font(.largeTitle)
                 .padding()
             
-            Toggle(isOn: $exportWeight) {
+            Toggle(isOn: $settings.exportWeight) {
                 Text("Weight")
             }
             .padding(.horizontal)
             
-            Toggle(isOn: $exportSteps) {
+            Toggle(isOn: $settings.exportSteps) {
                 Text("Steps")
+            }
+            .padding(.horizontal)
+            
+            Toggle(isOn: $settings.exportGlucose) {
+                Text("Blood Glucose (mg/dL)")
             }
             .padding(.horizontal)
             
@@ -131,12 +134,24 @@ struct DataSelectionView: View {
             switch result {
             case .success(let url):
                 print("File saved to: \(url)")
+                showingSaveSuccess = true
+                // Clear data from memory after successful save
+                csvContent = ""
             case .failure(let error):
                 print("Error saving file: \(error)")
             }
         }
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(filePath: saveToTemporaryLocation(), fileName: fileName)
+        }
+        .onDisappear {
+            // Clear data from memory when view disappears
+            csvContent = ""
+        }
+        .alert("File saved!", isPresented: $showingSaveSuccess) {
+            Button("Ok!") {
+                showingSaveSuccess = false
+            }
         }
     }
     
@@ -147,9 +162,10 @@ struct DataSelectionView: View {
                 
                 var weightSamples: [HKQuantitySample]? = nil
                 var stepsSamples: [HKQuantitySample]? = nil
+                var glucoseSamples: [GlucoseSampleMgDl]? = nil
                 let dispatchGroup = DispatchGroup()
                 
-                if exportWeight {
+                if settings.exportWeight {
                     dispatchGroup.enter()
                     healthManager.fetchWeightData(dateRange: dateRange) { samples, error in
                         weightSamples = samples
@@ -157,7 +173,7 @@ struct DataSelectionView: View {
                     }
                 }
                 
-                if exportSteps {
+                if settings.exportSteps {
                     dispatchGroup.enter()
                     healthManager.fetchStepsData(dateRange: dateRange) { samples, error in
                         stepsSamples = samples
@@ -165,8 +181,22 @@ struct DataSelectionView: View {
                     }
                 }
                 
+                if settings.exportGlucose {
+                    dispatchGroup.enter()
+                    healthManager.fetchBloodGlucoseDataTyped(dateRange: dateRange) { samples, error in
+                        glucoseSamples = samples
+                        dispatchGroup.leave()
+                    }
+                }
+                
                 dispatchGroup.notify(queue: .main) {
-                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, weightUnit: self.settings.weightUnit)
+                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, weightUnit: self.settings.weightUnit)
+                    
+                    // Clear sample arrays immediately after CSV generation
+                    weightSamples = nil
+                    stepsSamples = nil
+                    glucoseSamples = nil
+                    
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
                     let dateString = dateFormatter.string(from: Date())

@@ -11,8 +11,10 @@ class HealthKitManager {
         
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
         let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-        let typesToRead: Set<HKObjectType> = [weightType, stepsType]
-        let typesToWrite: Set<HKSampleType> = [weightType, stepsType]
+        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
+        
+        let typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
+        let typesToWrite: Set<HKSampleType> = [weightType, stepsType, glucoseType]
         
         healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { success, error in
             completion(success, error)
@@ -57,10 +59,76 @@ class HealthKitManager {
         healthStore.execute(query)
     }
     
+    func fetchBloodGlucoseData(dateRange: (startDate: Date, endDate: Date)? = nil, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
+        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
+        
+        var predicate: NSPredicate? = nil
+        if let dateRange = dateRange {
+            // Create predicate for date range (inclusive)
+            let calendar = Calendar.current
+            let startOfDay = calendar.startOfDay(for: dateRange.startDate)
+            let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate))!
+            predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+        }
+        
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+        let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
+            completion(samples as? [HKQuantitySample], error)
+        }
+        healthStore.execute(query)
+    }
+    
+    func fetchBloodGlucoseDataTyped(dateRange: (startDate: Date, endDate: Date)? = nil, completion: @escaping ([GlucoseSampleMgDl]?, Error?) -> Void) {
+        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
+        
+        var predicate: NSPredicate? = nil
+        if let dateRange = dateRange {
+            // Create predicate for date range (inclusive)
+            let calendar = Calendar.current
+            let startOfDay = calendar.startOfDay(for: dateRange.startDate)
+            let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate))!
+            predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+        }
+        
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+        let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, samples, error in
+            // Debug: Print raw sample data
+            if let samples = samples as? [HKQuantitySample] {
+                print("=== Glucose Fetch - Total samples: \(samples.count) ===")
+                for (index, sample) in samples.prefix(5).enumerated() {
+                    print("Sample \(index):")
+                    print("  Date: \(sample.startDate)")
+                    print("  Quantity: \(sample.quantity)")
+                    print("  Type: \(sample.quantityType)")
+                    
+                    // Try both units
+                    let percentUnit = HKUnit.percent()
+                    let mgDlUnit = HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci))
+                    
+                    if sample.quantity.is(compatibleWith: percentUnit) {
+                        let percentValue = sample.quantity.doubleValue(for: percentUnit)
+                        print("  As percent: \(percentValue)%")
+                    }
+                    
+                    if sample.quantity.is(compatibleWith: mgDlUnit) {
+                        let mgDlValue = sample.quantity.doubleValue(for: mgDlUnit)
+                        print("  As mg/dL: \(mgDlValue)")
+                    }
+                }
+            }
+            
+            let glucoseSamples = (samples as? [HKQuantitySample])?.compactMap { GlucoseSampleMgDl(from: $0) }
+            print("Glucose samples after filtering: \(glucoseSamples?.count ?? 0)")
+            completion(glucoseSamples, error)
+        }
+        healthStore.execute(query)
+    }
+    
     #if targetEnvironment(simulator)
     func generateTestData(completion: @escaping (Bool, Error?) -> Void) {
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
         let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
         
         var samples: [HKSample] = []
         let calendar = Calendar.current
@@ -88,6 +156,24 @@ class HealthKitManager {
                 end: date
             )
             samples.append(stepsSample)
+        }
+        
+        // Generate glucose test data
+        for i in 0..<30 {
+            let date = calendar.date(byAdding: .day, value: -i, to: Date())!
+            
+            // Blood glucose sample (70-180 mg/dL)
+            let glucoseValue = Double.random(in: 70.0...180.0)
+            let glucoseUnit = HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci))
+            let metadata: [String: Any] = [HKMetadataKeyWasUserEntered: false]
+            let glucoseSample = HKQuantitySample(
+                type: glucoseType,
+                quantity: HKQuantity(unit: glucoseUnit, doubleValue: glucoseValue),
+                start: date,
+                end: date,
+                metadata: metadata
+            )
+            samples.append(glucoseSample)
         }
         
         healthStore.save(samples) { success, error in
