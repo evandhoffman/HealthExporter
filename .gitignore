@@ -11,3 +11,4 @@ Podfile.lock
 
 # Secrets
 Secrets.plist
+.DS_Store
