@@ -82,6 +82,13 @@ struct A1CSample {
     let value: Double // A1C value as percentage (e.g., 7.5 for 7.5%)
     let unit: String // Unit from FHIR (typically "%")
     
+    /// Memberwise initializer for use in tests and previews.
+    init(effectiveDateTime: Date, value: Double, unit: String) {
+        self.effectiveDateTime = effectiveDateTime
+        self.value = value
+        self.unit = unit
+    }
+
     /// Creates an A1C sample from a clinical record FHIR resource
     /// Looks for LOINC code 4548-4 (Hemoglobin A1C)
     /// Extracts effectiveDateTime, valueQuantity.value, and valueQuantity.unit
