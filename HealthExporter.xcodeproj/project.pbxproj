@@ -10,10 +10,21 @@
 		A9DCE2CB43EE22722FB3793C /* libPods-HealthExporter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2825E7550697EE955DD57CC6 /* libPods-HealthExporter.a */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		BB000007000000000000AAA7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1DBDF7442F10AFD6008549F8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1DBDF74B2F10AFD6008549F8;
+			remoteInfo = HealthExporter;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		1DBDF74C2F10AFD6008549F8 /* HealthExporter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthExporter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2825E7550697EE955DD57CC6 /* libPods-HealthExporter.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HealthExporter.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		82377906375B69966A413710 /* Pods-HealthExporter.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthExporter.release.xcconfig"; path = "Target Support Files/Pods-HealthExporter/Pods-HealthExporter.release.xcconfig"; sourceTree = "<group>"; };
+		BB000001000000000000AAA1 /* HealthExporterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthExporterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D373AE31C3243EDA7322B3DC /* Pods-HealthExporter.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthExporter.debug.xcconfig"; path = "Target Support Files/Pods-HealthExporter/Pods-HealthExporter.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -36,6 +47,11 @@
 			path = HealthExporter;
 			sourceTree = "<group>";
 		};
+		BB000002000000000000AAA2 /* HealthExporterTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = HealthExporterTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +60,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				A9DCE2CB43EE22722FB3793C /* libPods-HealthExporter.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB000004000000000000AAA4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				1DBDF74E2F10AFD6008549F8 /* HealthExporter */,
+				BB000002000000000000AAA2 /* HealthExporterTests */,
 				1DBDF74D2F10AFD6008549F8 /* Products */,
 				AA6E491B9F9BBF8CE7D62AE6 /* Pods */,
 				03989774CDAEC5C47DF48E58 /* Frameworks */,
@@ -72,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				1DBDF74C2F10AFD6008549F8 /* HealthExporter.app */,
+				BB000001000000000000AAA1 /* HealthExporterTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -110,6 +135,27 @@
 			productReference = 1DBDF74C2F10AFD6008549F8 /* HealthExporter.app */;
 			productType = "com.apple.product-type.application";
 		};
+		BB000006000000000000AAA6 /* HealthExporterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB00000B000000000000AAAB /* Build configuration list for PBXNativeTarget "HealthExporterTests" */;
+			buildPhases = (
+				BB000003000000000000AAA3 /* Sources */,
+				BB000004000000000000AAA4 /* Frameworks */,
+				BB000005000000000000AAA5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB000008000000000000AAA8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BB000002000000000000AAA2 /* HealthExporterTests */,
+			);
+			name = HealthExporterTests;
+			productName = HealthExporterTests;
+			productReference = BB000001000000000000AAA1 /* HealthExporterTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -122,6 +168,10 @@
 				TargetAttributes = {
 					1DBDF74B2F10AFD6008549F8 = {
 						CreatedOnToolsVersion = 26.2;
+					};
+					BB000006000000000000AAA6 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 1DBDF74B2F10AFD6008549F8;
 					};
 				};
 			};
@@ -140,12 +190,20 @@
 			projectRoot = "";
 			targets = (
 				1DBDF74B2F10AFD6008549F8 /* HealthExporter */,
+				BB000006000000000000AAA6 /* HealthExporterTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1DBDF74A2F10AFD6008549F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB000005000000000000AAA5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -208,7 +266,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BB000003000000000000AAA3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BB000008000000000000AAA8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1DBDF74B2F10AFD6008549F8 /* HealthExporter */;
+			targetProxy = BB000007000000000000AAA7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1DBDF7552F10AFD8008549F8 /* Debug */ = {
@@ -408,6 +481,48 @@
 			};
 			name = Release;
 		};
+		BB000009000000000000AAA9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.evanhoffman.HealthExporterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HealthExporter.app/HealthExporter";
+			};
+			name = Debug;
+		};
+		BB00000A000000000000AAAA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.evanhoffman.HealthExporterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HealthExporter.app/HealthExporter";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -425,6 +540,15 @@
 			buildConfigurations = (
 				1DBDF7582F10AFD8008549F8 /* Debug */,
 				1DBDF7592F10AFD8008549F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB00000B000000000000AAAB /* Build configuration list for PBXNativeTarget "HealthExporterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB000009000000000000AAA9 /* Debug */,
+				BB00000A000000000000AAAA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
