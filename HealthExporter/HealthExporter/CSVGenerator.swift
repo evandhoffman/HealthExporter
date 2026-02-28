@@ -15,28 +15,28 @@ class CSVGenerator {
     }()
     
     static func generateWeightCSV(from samples: [HKQuantitySample], unit: WeightUnit) -> String {
-        var csv = "Date,ISO8601,Metric,Value,Unit\n"
-        
+        var lines: [String] = ["Date,ISO8601,Metric,Value,Unit"]
+        lines.reserveCapacity(samples.count + 1)
         for sample in samples {
             let date = dateFormatter.string(from: sample.startDate)
             let iso8601 = iso8601Formatter.string(from: sample.startDate)
             let weightKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
             let (value, unitString) = convertWeight(weightKg, to: unit)
-            csv += "\(date),\(iso8601),Weight,\(String(format: "%.2f", value)),\(unitString)\n"
+            lines.append("\(date),\(iso8601),Weight,\(String(format: "%.2f", value)),\(unitString)")
         }
-        return csv
+        return lines.joined(separator: "\n") + "\n"
     }
-    
+
     static func generateStepsCSV(from samples: [HKQuantitySample]) -> String {
-        var csv = "Date,ISO8601,Metric,Value,Unit\n"
-        
+        var lines: [String] = ["Date,ISO8601,Metric,Value,Unit"]
+        lines.reserveCapacity(samples.count + 1)
         for sample in samples {
             let date = dateFormatter.string(from: sample.startDate)
             let iso8601 = iso8601Formatter.string(from: sample.startDate)
             let steps = sample.quantity.doubleValue(for: HKUnit.count())
-            csv += "\(date),\(iso8601),Steps,\(Int(steps)),steps\n"
+            lines.append("\(date),\(iso8601),Steps,\(Int(steps)),steps")
         }
-        return csv
+        return lines.joined(separator: "\n") + "\n"
     }
     
     static func generateCombinedCSV(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?, glucoseSamples: [GlucoseSampleMgDl]?, a1cSamples: [A1CSample]?, weightUnit: WeightUnit) -> String {
