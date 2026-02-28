@@ -16,6 +16,7 @@ enum DistanceSpeedUnit: String, CaseIterable {
     case imperial = "Imperial (feet/mph)"
 }
 
+@MainActor
 class SettingsManager: ObservableObject {
     @Published var temperatureUnit: TemperatureUnit
     @Published var weightUnit: WeightUnit

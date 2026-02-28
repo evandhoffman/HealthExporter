@@ -1,6 +1,7 @@
 import XCTest
 @testable import HealthExporter
 
+@MainActor
 final class SettingsManagerTests: XCTestCase {
 
     override func setUp() {
