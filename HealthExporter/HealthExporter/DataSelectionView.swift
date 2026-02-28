@@ -1,6 +1,9 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import HealthKit
+import os
+
+private let logger = Logger(subsystem: "com.HealthExporter", category: "DataSelection")
 
 struct DataSelectionView: View {
     @State private var showingExporter = false
@@ -10,10 +13,13 @@ struct DataSelectionView: View {
     @State private var selectedDateRangeOption: DateRangeOption = .lastXDays
     @State private var lastXDaysValue: String = "30"
     @State private var lastXRecordsValue: String = "100"
-    @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
+    @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
     @State private var endDate = Date()
     @State private var showingSaveSuccess = false
     @State private var exportEnabled = false
+    @State private var errorMessage: String?
+    @State private var showErrorAlert = false
+    @State private var temporaryFileURL: URL?
     
     @ObservedObject var settings: SettingsManager
     let healthManager = HealthKitManager()
@@ -235,95 +241,127 @@ struct DataSelectionView: View {
         ) { result in
             switch result {
             case .success(let url):
-                print("File saved to: \(url)")
+                logger.info("File saved to: \(url.path)")
                 showingSaveSuccess = true
-                // Clear data from memory after successful save
                 csvContent = ""
             case .failure(let error):
-                print("Error saving file: \(error)")
+                logger.error("Error saving file: \(error.localizedDescription)")
+                errorMessage = ExportError.fileWriteFailed(underlying: error).localizedDescription
+                showErrorAlert = true
             }
         }
-        .sheet(isPresented: $showingShareSheet) {
+        .sheet(isPresented: $showingShareSheet, onDismiss: {
+            if let url = temporaryFileURL {
+                try? FileManager.default.removeItem(at: url)
+                temporaryFileURL = nil
+            }
+        }) {
             ShareSheet(filePath: saveToTemporaryLocation(), fileName: fileName)
         }
         .onDisappear {
-            // Clear data from memory when view disappears
             csvContent = ""
+            if let url = temporaryFileURL {
+                try? FileManager.default.removeItem(at: url)
+                temporaryFileURL = nil
+            }
         }
         .alert("File saved!", isPresented: $showingSaveSuccess) {
             Button("Ok!") {
                 showingSaveSuccess = false
             }
         }
+        .alert("Export Error", isPresented: $showErrorAlert) {
+            Button("OK") { }
+        } message: {
+            Text(errorMessage ?? "An unknown error occurred.")
+        }
     }
     
     private func exportData(forSaving: Bool = false) {
         healthManager.requestAuthorization { success, error in
-            if success {
-                var weightSamples: [HKQuantitySample]? = nil
-                var stepsSamples: [HKQuantitySample]? = nil
-                var glucoseSamples: [GlucoseSampleMgDl]? = nil
-                var a1cSamples: [A1CSample]? = nil
-                let dispatchGroup = DispatchGroup()
-                
-                // Determine fetch parameters based on selected option
-                let dateRange: (startDate: Date, endDate: Date)? = getDateRangeForOption()
-                let recordLimit: Int = getRecordLimitForOption()
-                
-                if settings.exportWeight {
-                    dispatchGroup.enter()
-                    healthManager.fetchWeightData(dateRange: dateRange, limit: recordLimit) { samples, error in
-                        weightSamples = samples
-                        dispatchGroup.leave()
-                    }
+            guard success else {
+                DispatchQueue.main.async {
+                    logger.error("Authorization failed: \(error?.localizedDescription ?? "Unknown error")")
+                    errorMessage = ExportError.healthKitAuthorizationFailed(underlying: error).localizedDescription
+                    showErrorAlert = true
                 }
-                
-                if settings.exportSteps {
-                    dispatchGroup.enter()
-                    healthManager.fetchStepsData(dateRange: dateRange, limit: recordLimit) { samples, error in
-                        stepsSamples = samples
-                        dispatchGroup.leave()
-                    }
+                return
+            }
+
+            var weightSamples: [HKQuantitySample]? = nil
+            var stepsSamples: [HKQuantitySample]? = nil
+            var glucoseSamples: [GlucoseSampleMgDl]? = nil
+            var a1cSamples: [A1CSample]? = nil
+            let dispatchGroup = DispatchGroup()
+
+            let dateRange: (startDate: Date, endDate: Date)? = getDateRangeForOption()
+            let recordLimit: Int = getRecordLimitForOption()
+
+            if settings.exportWeight {
+                dispatchGroup.enter()
+                healthManager.fetchWeightData(dateRange: dateRange, limit: recordLimit) { samples, error in
+                    weightSamples = samples
+                    dispatchGroup.leave()
                 }
-                
-                if settings.exportGlucose {
-                    dispatchGroup.enter()
-                    healthManager.fetchBloodGlucoseDataTyped(dateRange: dateRange, limit: recordLimit) { samples, error in
-                        glucoseSamples = samples
-                        dispatchGroup.leave()
-                    }
+            }
+
+            if settings.exportSteps {
+                dispatchGroup.enter()
+                healthManager.fetchStepsData(dateRange: dateRange, limit: recordLimit) { samples, error in
+                    stepsSamples = samples
+                    dispatchGroup.leave()
                 }
-                
-                if settings.exportA1C {
-                    dispatchGroup.enter()
-                    healthManager.fetchA1CData(dateRange: dateRange) { samples, error in
-                        a1cSamples = samples
-                        dispatchGroup.leave()
-                    }
+            }
+
+            if settings.exportGlucose {
+                dispatchGroup.enter()
+                healthManager.fetchBloodGlucoseDataTyped(dateRange: dateRange, limit: recordLimit) { samples, error in
+                    glucoseSamples = samples
+                    dispatchGroup.leave()
                 }
-                
-                dispatchGroup.notify(queue: .main) {
-                    csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, a1cSamples: a1cSamples, weightUnit: self.settings.weightUnit)
-                    
-                    // Clear sample arrays immediately after CSV generation
+            }
+
+            if settings.exportA1C {
+                dispatchGroup.enter()
+                healthManager.fetchA1CData(dateRange: dateRange) { samples, error in
+                    a1cSamples = samples
+                    dispatchGroup.leave()
+                }
+            }
+
+            dispatchGroup.notify(queue: .main) {
+                let hasData = (weightSamples?.isEmpty == false) ||
+                              (stepsSamples?.isEmpty == false) ||
+                              (glucoseSamples?.isEmpty == false) ||
+                              (a1cSamples?.isEmpty == false)
+
+                guard hasData else {
                     weightSamples = nil
                     stepsSamples = nil
                     glucoseSamples = nil
                     a1cSamples = nil
-                    
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
-                    let dateString = dateFormatter.string(from: Date())
-                    fileName = "HealthExporter_\(dateString).csv"
-                    
-                    if forSaving {
-                        showingExporter = true
-                    } else {
-                        showingShareSheet = true
-                    }
+                    errorMessage = ExportError.noDataFound.localizedDescription
+                    showErrorAlert = true
+                    return
                 }
-            } else {
-                print("Authorization failed: \(error?.localizedDescription ?? "Unknown error")")
+
+                csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, a1cSamples: a1cSamples, weightUnit: self.settings.weightUnit)
+
+                weightSamples = nil
+                stepsSamples = nil
+                glucoseSamples = nil
+                a1cSamples = nil
+
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
+                let dateString = dateFormatter.string(from: Date())
+                fileName = "HealthExporter_\(dateString).csv"
+
+                if forSaving {
+                    showingExporter = true
+                } else {
+                    showingShareSheet = true
+                }
             }
         }
     }
@@ -331,9 +369,9 @@ struct DataSelectionView: View {
     private func getDateRangeForOption() -> (startDate: Date, endDate: Date)? {
         switch selectedDateRangeOption {
         case .lastXDays:
-            if let days = Int(lastXDaysValue) {
-                let startDate = Calendar.current.date(byAdding: .day, value: -days, to: Date())!
-                return (startDate, Date())
+            if let days = Int(lastXDaysValue),
+               let start = Calendar.current.date(byAdding: .day, value: -days, to: Date()) {
+                return (start, Date())
             }
             return nil
         case .lastXRecords:
@@ -357,7 +395,12 @@ struct DataSelectionView: View {
     private func saveToTemporaryLocation() -> URL {
         let tempDir = FileManager.default.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent(fileName)
-        try? csvContent.write(to: fileURL, atomically: true, encoding: .utf8)
+        do {
+            try csvContent.write(to: fileURL, atomically: true, encoding: .utf8)
+        } catch {
+            logger.error("Failed to write temp file: \(error.localizedDescription)")
+        }
+        temporaryFileURL = fileURL
         return fileURL
     }
 }

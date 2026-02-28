@@ -1,7 +1,9 @@
 import HealthKit
+import os
 
 class HealthKitManager {
     let healthStore = HKHealthStore()
+    private static let logger = Logger(subsystem: "com.HealthExporter", category: "HealthKit")
     
     func requestAuthorization(completion: @escaping (Bool, Error?) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
@@ -38,99 +40,84 @@ class HealthKitManager {
         
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            // Create predicate for date range (inclusive)
             let calendar = Calendar.current
             let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-            let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate))!
+            guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else {
+                completion(nil, nil)
+                return
+            }
             predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         let query = HKSampleQuery(sampleType: weightType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
             completion(samples as? [HKQuantitySample], error)
         }
         healthStore.execute(query)
     }
-    
+
     func fetchStepsData(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
         let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-        
+
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            // Create predicate for date range (inclusive)
             let calendar = Calendar.current
             let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-            let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate))!
+            guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else {
+                completion(nil, nil)
+                return
+            }
             predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         let query = HKSampleQuery(sampleType: stepsType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
             completion(samples as? [HKQuantitySample], error)
         }
         healthStore.execute(query)
     }
-    
+
     func fetchBloodGlucoseData(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
         let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
-        
+
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            // Create predicate for date range (inclusive)
             let calendar = Calendar.current
             let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-            let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate))!
+            guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else {
+                completion(nil, nil)
+                return
+            }
             predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
             completion(samples as? [HKQuantitySample], error)
         }
         healthStore.execute(query)
     }
-    
+
     func fetchBloodGlucoseDataTyped(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([GlucoseSampleMgDl]?, Error?) -> Void) {
         let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
-        
+
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            // Create predicate for date range (inclusive)
             let calendar = Calendar.current
             let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-            let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate))!
+            guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else {
+                completion(nil, nil)
+                return
+            }
             predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
         }
-        
+
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
-            // Debug: Print raw sample data
-            if let samples = samples as? [HKQuantitySample] {
-                print("=== Glucose Fetch - Total samples: \(samples.count) ===")
-                for (index, sample) in samples.prefix(5).enumerated() {
-                    print("Sample \(index):")
-                    print("  Date: \(sample.startDate)")
-                    print("  Quantity: \(sample.quantity)")
-                    print("  Type: \(sample.quantityType)")
-                    
-                    // Try both units
-                    let percentUnit = HKUnit.percent()
-                    let mgDlUnit = HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci))
-                    
-                    if sample.quantity.is(compatibleWith: percentUnit) {
-                        let percentValue = sample.quantity.doubleValue(for: percentUnit)
-                        print("  As percent: \(percentValue)%")
-                    }
-                    
-                    if sample.quantity.is(compatibleWith: mgDlUnit) {
-                        let mgDlValue = sample.quantity.doubleValue(for: mgDlUnit)
-                        print("  As mg/dL: \(mgDlValue)")
-                    }
-                }
-            }
-            
-            let glucoseSamples = (samples as? [HKQuantitySample])?.compactMap { GlucoseSampleMgDl(from: $0) }
-            print("Glucose samples after filtering: \(glucoseSamples?.count ?? 0)")
+            let rawSamples = samples as? [HKQuantitySample]
+            Self.logger.debug("Glucose fetch returned \(rawSamples?.count ?? 0) raw samples")
+            let glucoseSamples = rawSamples?.compactMap { GlucoseSampleMgDl(from: $0) }
+            Self.logger.debug("Glucose samples after filtering: \(glucoseSamples?.count ?? 0)")
             completion(glucoseSamples, error)
         }
         healthStore.execute(query)
@@ -162,7 +149,7 @@ class HealthKitManager {
                 if let dateRange = dateRange, let sample = sample {
                     let calendar = Calendar.current
                     let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-                    let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate))!
+                    guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else { return nil }
                     if sample.effectiveDateTime >= startOfDay && sample.effectiveDateTime < endOfDay {
                         return sample
                     }
@@ -188,8 +175,8 @@ class HealthKitManager {
         
         // Generate 30 days of test data
         for i in 0..<30 {
-            let date = calendar.date(byAdding: .day, value: -i, to: Date())!
-            
+            guard let date = calendar.date(byAdding: .day, value: -i, to: Date()) else { continue }
+
             // Weight sample (80-95 kg)
             let weightValue = Double.random(in: 80.0...95.0)
             let weightSample = HKQuantitySample(
@@ -199,7 +186,7 @@ class HealthKitManager {
                 end: date
             )
             samples.append(weightSample)
-            
+
             // Steps sample (3000-12000 steps)
             let stepsValue = Double.random(in: 3000.0...12000.0)
             let stepsSample = HKQuantitySample(
@@ -210,10 +197,10 @@ class HealthKitManager {
             )
             samples.append(stepsSample)
         }
-        
+
         // Generate glucose test data
         for i in 0..<30 {
-            let date = calendar.date(byAdding: .day, value: -i, to: Date())!
+            guard let date = calendar.date(byAdding: .day, value: -i, to: Date()) else { continue }
             
             // Blood glucose sample (70-180 mg/dL)
             let glucoseValue = Double.random(in: 70.0...180.0)
