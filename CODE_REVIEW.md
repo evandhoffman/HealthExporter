@@ -107,10 +107,8 @@ func fetchData() async {
 
 Nine separate `onChange` handlers for validation logic could be grouped into a single validation method triggered by relevant state changes.
 
-### 9. SecretsManager is empty
-**Location:** `SecretsManager.swift`
-
-Empty singleton class with only a TODO comment. Remove it or implement it.
+### 9. ~~SecretsManager is empty~~ (Resolved)
+`SecretsManager.swift` has been removed from the project.
 
 ### 10. BuildConfig uses static flag
 **Location:** `BuildConfig.swift`
@@ -121,10 +119,8 @@ Empty singleton class with only a TODO comment. Remove it or implement it.
 
 ## Low-Priority / Code Quality
 
-### 11. CSV generation efficiency
-**Location:** `CSVGenerator.swift`
-
-String concatenation in a loop can be inefficient for large datasets. Consider building an array of lines and joining at the end, or streaming directly to a file.
+### 11. ~~CSV generation efficiency~~ (Resolved)
+`CSVGenerator.swift` now builds an array of lines with `reserveCapacity()` and uses `lines.joined(separator: "\n")` instead of string concatenation.
 
 ### 12. Inconsistent error handling patterns
 **Location:** Codebase-wide
@@ -148,10 +144,11 @@ enum ExportError: LocalizedError {
 }
 ```
 
-### 13. Add unit tests
-Key areas to test:
-- CSV generation with various data types and edge cases
-- Date range calculations
-- Unit conversions (kg/lbs, C/F)
-- Blood glucose filtering logic
-- Empty data handling
+### 13. ~~Add unit tests~~ (Partially resolved)
+Unit tests have been added in `HealthExporterTests/`:
+- `CSVGeneratorTests.swift` — CSV generation for all metrics, unit conversion, formatting
+- `DateRangeOptionTests.swift` — date range enum cases and display names
+- `HealthMetricConfigTests.swift` — metric availability and LOINC codes
+- `GlucoseSampleTests.swift` — blood glucose filtering logic
+
+Remaining gaps: HealthKit data fetching (requires HealthKit store), FHIR parsing (requires HKClinicalRecord), and SwiftUI views.

@@ -51,7 +51,7 @@ func fetchA1CData(dateRange: (startDate: Date, endDate: Date)? = nil,
   - Metric name: "Hemoglobin A1C"
   - Value formatted to 2 decimal places
   - Unit: From FHIR resource (typically "%")
-  - Example row: `2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%`
+  - Example row: `2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%,Apple Health`
 
 ## Required Configuration
 
@@ -126,11 +126,11 @@ The implementation includes comprehensive error handling:
 ## CSV Output Example
 
 ```csv
-Date,ISO8601,Metric,Value,Unit
-2026-01-15 14:30:00,2026-01-15T14:30:00Z,Weight,185.50,lbs
-2026-01-15 14:30:00,2026-01-15T14:30:00Z,Steps,5432,steps
-2026-01-15 14:30:00,2026-01-15T14:30:00Z,Blood Glucose,145,mg/dL
-2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%
+Date,ISO8601,Metric,Value,Unit,Source
+2026-01-15 14:30:00,2026-01-15T14:30:00Z,Weight,185.50,lbs,Withings
+2026-01-15 14:30:00,2026-01-15T14:30:00Z,Steps,5432,steps,Apple Watch
+2026-01-15 14:30:00,2026-01-15T14:30:00Z,Blood Glucose,145,mg/dL,MyFitnessPal
+2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%,Apple Health
 ```
 
 ## Integration with Existing Flow
@@ -164,4 +164,3 @@ Potential improvements for future versions:
 - All changes are backward compatible
 - A1C export is optional and defaults to disabled
 - Existing weight/steps/glucose export unaffected
-- iOS 15.0+ requirement isolated to A1C feature only

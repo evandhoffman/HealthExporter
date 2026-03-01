@@ -14,8 +14,6 @@ Tests live in `HealthExporterTests/` (sibling to the main `HealthExporter/` sour
 | `DateRangeOptionTests.swift` | `DateRangeOption` enum cases, raw values, `displayName` |
 | `HealthMetricConfigTests.swift` | `HealthMetricConfig.isAvailable`, `HealthMetrics` static properties, `LOINCCode` constants |
 | `GlucoseSampleTests.swift` | `GlucoseSampleMgDl` init — values ≥20 accepted, values <20 rejected |
-| `SettingsManagerTests.swift` | Default values, UserDefaults persistence, invalid-value fallbacks, A1C availability enforcement |
-
 ## Running Tests Locally
 
 ### In Xcode

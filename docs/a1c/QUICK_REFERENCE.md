@@ -90,8 +90,8 @@ Add this key (adjust description as needed):
 
 4. **CSV Example**
    ```
-   Date,ISO8601,Metric,Value,Unit
-   2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%
+   Date,ISO8601,Metric,Value,Unit,Source
+   2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%,Apple Health
    ```
 
 ---
