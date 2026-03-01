@@ -82,7 +82,11 @@ struct DataSelectionView: View {
             HStack {
                 HStack(spacing: 4) {
                     Text("Hemoglobin A1C (%)")
-                    if !HealthMetrics.a1c.isAvailable {
+                    if HealthMetrics.a1c.isAvailable {
+                        Image(systemName: "cross.case")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
                         Text("💰")
                             .font(.caption)
                     }
@@ -103,7 +107,20 @@ struct DataSelectionView: View {
             .padding(.horizontal)
             .opacity(HealthMetrics.a1c.isAvailable ? 1.0 : 0.5)
             .disabled(!HealthMetrics.a1c.isAvailable)
-            
+
+            if HealthMetrics.a1c.isAvailable {
+                HStack(spacing: 4) {
+                    Image(systemName: "cross.case")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text("Requires access to Clinical Health Records")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             Divider()
                 .padding()
             
@@ -249,7 +266,7 @@ struct DataSelectionView: View {
     }
     
     private func exportData() {
-        healthManager.requestAuthorization { success, error in
+        healthManager.requestAuthorization(includeA1C: settings.exportA1C) { success, error in
             guard success else {
                 DispatchQueue.main.async {
                     logger.error("Authorization failed: \(error?.localizedDescription ?? "Unknown error")")

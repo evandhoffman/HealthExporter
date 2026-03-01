@@ -5,20 +5,20 @@ class HealthKitManager {
     let healthStore = HKHealthStore()
     private static let logger = Logger(subsystem: "com.HealthExporter", category: "HealthKit")
     
-    func requestAuthorization(completion: @escaping (Bool, Error?) -> Void) {
+    func requestAuthorization(includeA1C: Bool = false, completion: @escaping (Bool, Error?) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
             completion(false, NSError(domain: "HealthKit", code: 1, userInfo: [NSLocalizedDescriptionKey: "HealthKit is not available"]))
             return
         }
-        
+
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
         let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
         let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
-        
+
         var typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
 
-        // Add Clinical Records for A1C if the paid account entitlement is available
-        if HealthMetrics.a1c.isAvailable,
+        // Only request Clinical Records access when A1C is actually selected
+        if includeA1C, HealthMetrics.a1c.isAvailable,
            let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
             typesToRead.insert(clinicalType)
         }
