@@ -50,6 +50,12 @@ struct SettingsView: View {
                         NavigationLink(destination: PrivacyPolicyView()) {
                             Text("Privacy Policy & Disclaimer")
                         }
+                        HStack {
+                            Text("Version")
+                            Spacer()
+                            Text("\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
             }
