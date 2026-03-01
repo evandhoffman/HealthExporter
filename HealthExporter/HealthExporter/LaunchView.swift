@@ -21,7 +21,7 @@ struct LaunchView: View {
 
             Spacer()
 
-            Text("© \(Calendar.current.component(.year, from: Date())) Evan Hoffman")
+            Text("© \(String(Calendar.current.component(.year, from: Date()))) Evan Hoffman")
                 .font(.footnote)
                 .foregroundColor(.secondary)
                 .padding(.bottom, 32)
