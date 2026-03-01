@@ -19,10 +19,11 @@ class HealthKitManager {
 
         let typesToWrite: Set<HKSampleType> = [weightType, stepsType, glucoseType]
 
-        // Clinical Records auth for A1C requires the health-records entitlement,
-        // which must be granted by Apple. Requesting it without the entitlement
-        // throws an uncatchable NSException. Skip until entitlement is obtained.
-        // TODO: Add clinical records auth here once Apple grants the entitlement
+        // Add Clinical Records for A1C if the paid account entitlement is available
+        if HealthMetrics.a1c.isAvailable,
+           let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
+            typesToRead.insert(clinicalType)
+        }
 
         healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { success, error in
             completion(success, error)
