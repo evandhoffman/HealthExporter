@@ -5,6 +5,9 @@ on:
     types: [closed]
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   bump:
     name: Increment CURRENT_PROJECT_VERSION
