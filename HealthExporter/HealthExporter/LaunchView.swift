@@ -71,10 +71,15 @@ struct LaunchView: View {
                 .transition(.opacity)
             }
 
-            Text("\u{00A9} \(String(Calendar.current.component(.year, from: Date()))) Evan Hoffman")
-                .font(.footnote)
-                .foregroundColor(.secondary)
-                .padding(.bottom, 32)
+            VStack(spacing: 4) {
+                Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                Text("\u{00A9} \(String(Calendar.current.component(.year, from: Date()))) Evan Hoffman")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.bottom, 32)
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView(settings: settings)
