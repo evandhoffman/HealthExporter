@@ -37,7 +37,7 @@ struct SettingsView: View {
                             Text("Generate Test Data")
                                 .foregroundColor(.blue)
                         }
-                        
+
                         if !testDataMessage.isEmpty {
                             Text(testDataMessage)
                                 .font(.caption)
@@ -45,6 +45,12 @@ struct SettingsView: View {
                         }
                     }
                     #endif
+
+                    Section(header: Text("About")) {
+                        NavigationLink(destination: PrivacyPolicyView()) {
+                            Text("Privacy Policy & Disclaimer")
+                        }
+                    }
                 }
             }
             .navigationTitle("Settings")
