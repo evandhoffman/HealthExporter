@@ -7,20 +7,16 @@ struct HealthExporterApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if isLaunching {
-                LaunchView()
+            NavigationStack {
+                LaunchView(settings: settings, isLaunching: $isLaunching)
                     .onAppear {
+                        guard isLaunching else { return }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                            withAnimation {
+                            withAnimation(.easeInOut(duration: 0.4)) {
                                 isLaunching = false
                             }
                         }
                     }
-            } else {
-                NavigationStack {
-                    SplashView(settings: settings)
-                }
-                .transition(.opacity)
             }
         }
     }
