@@ -7,7 +7,6 @@ private let logger = Logger(subsystem: "com.HealthExporter", category: "DataSele
 
 struct DataSelectionView: View {
     @State private var showingExporter = false
-    @State private var showingShareSheet = false
     @State private var csvContent = ""
     @State private var fileName = ""
     @State private var selectedDateRangeOption: DateRangeOption = .lastXDays
@@ -19,7 +18,6 @@ struct DataSelectionView: View {
     @State private var exportEnabled = false
     @State private var errorMessage: String?
     @State private var showErrorAlert = false
-    @State private var temporaryFileURL: URL?
     
     @ObservedObject var settings: SettingsManager
     let healthManager = HealthKitManager()
@@ -193,33 +191,18 @@ struct DataSelectionView: View {
                     .foregroundColor(.red)
             }
             
-            HStack(spacing: 12) {
-                Button(action: {
-                    exportData(forSaving: true)
-                }) {
-                    Text("Save...")
-                        .font(.title3)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(exportEnabled ? Color.blue : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                .disabled(!exportEnabled)
-                
-                Button(action: {
-                    exportData(forSaving: false)
-                }) {
-                    Text("Share...")
-                        .font(.title3)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(exportEnabled ? Color.green : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                .disabled(!exportEnabled)
+            Button(action: {
+                exportData()
+            }) {
+                Text("Save...")
+                    .font(.title3)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(exportEnabled ? Color.blue : Color.gray)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
             }
+            .disabled(!exportEnabled)
             .padding()
         }
         .padding()
@@ -250,20 +233,8 @@ struct DataSelectionView: View {
                 showErrorAlert = true
             }
         }
-        .sheet(isPresented: $showingShareSheet, onDismiss: {
-            if let url = temporaryFileURL {
-                try? FileManager.default.removeItem(at: url)
-                temporaryFileURL = nil
-            }
-        }) {
-            ShareSheet(filePath: saveToTemporaryLocation(), fileName: fileName)
-        }
         .onDisappear {
             csvContent = ""
-            if let url = temporaryFileURL {
-                try? FileManager.default.removeItem(at: url)
-                temporaryFileURL = nil
-            }
         }
         .alert("File saved!", isPresented: $showingSaveSuccess) {
             Button("Ok!") {
@@ -277,7 +248,7 @@ struct DataSelectionView: View {
         }
     }
     
-    private func exportData(forSaving: Bool = false) {
+    private func exportData() {
         healthManager.requestAuthorization { success, error in
             guard success else {
                 DispatchQueue.main.async {
@@ -357,11 +328,7 @@ struct DataSelectionView: View {
                 let dateString = dateFormatter.string(from: Date())
                 fileName = "HealthExporter_\(dateString).csv"
 
-                if forSaving {
-                    showingExporter = true
-                } else {
-                    showingShareSheet = true
-                }
+                showingExporter = true
             }
         }
     }
@@ -392,17 +359,6 @@ struct DataSelectionView: View {
         }
     }
     
-    private func saveToTemporaryLocation() -> URL {
-        let tempDir = FileManager.default.temporaryDirectory
-        let fileURL = tempDir.appendingPathComponent(fileName)
-        do {
-            try csvContent.write(to: fileURL, atomically: true, encoding: .utf8)
-        } catch {
-            logger.error("Failed to write temp file: \(error.localizedDescription)")
-        }
-        temporaryFileURL = fileURL
-        return fileURL
-    }
 }
 
 struct DataSelectionView_Previews: PreviewProvider {
