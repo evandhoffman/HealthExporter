@@ -24,7 +24,7 @@ xcodebuild -workspace HealthExporter.xcworkspace -scheme HealthExporter -configu
 ## Architecture
 
 ### Navigation Flow
-`HealthExporterApp` (NavigationStack) → `SplashView` → `DataSelectionView`; Settings sheet accessible from SplashView gear icon.
+`HealthExporterApp` (NavigationStack) → `LaunchView` (splash with loading spinner, then reveals Next button + Settings) → `DataSelectionView`; Settings sheet accessible from LaunchView.
 
 ### Key Components
 

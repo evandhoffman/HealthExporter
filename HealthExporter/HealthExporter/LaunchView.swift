@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct LaunchView: View {
+    @ObservedObject var settings: SettingsManager
+    @Binding var isLaunching: Bool
+    @State private var showingSettings = false
+
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
@@ -16,21 +20,65 @@ struct LaunchView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
 
-            ProgressView()
-                .scaleEffect(1.2)
+            if isLaunching {
+                ProgressView()
+                    .scaleEffect(1.2)
+                    .transition(.opacity)
+            } else {
+                VStack(spacing: 16) {
+                    Text("Export your health data to CSV")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    NavigationLink(destination: DataSelectionView(settings: settings)) {
+                        Text("Next")
+                            .font(.title)
+                            .padding(.horizontal, 40)
+                            .padding(.vertical, 12)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+
+                    Button(action: {
+                        showingSettings = true
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "gear")
+                            Text("Settings")
+                        }
+                        .font(.body)
+                        .foregroundColor(.blue)
+                    }
+                }
+                .transition(.opacity)
+            }
 
             Spacer()
 
-            Text("© \(String(Calendar.current.component(.year, from: Date()))) Evan Hoffman")
+            Text("\u{00A9} \(String(Calendar.current.component(.year, from: Date()))) Evan Hoffman")
                 .font(.footnote)
                 .foregroundColor(.secondary)
                 .padding(.bottom, 32)
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView(settings: settings)
         }
     }
 }
 
 struct LaunchView_Previews: PreviewProvider {
     static var previews: some View {
-        LaunchView()
+        Group {
+            NavigationStack {
+                LaunchView(settings: SettingsManager(), isLaunching: .constant(true))
+            }
+            .previewDisplayName("Launching")
+
+            NavigationStack {
+                LaunchView(settings: SettingsManager(), isLaunching: .constant(false))
+            }
+            .previewDisplayName("Ready")
+        }
     }
 }
