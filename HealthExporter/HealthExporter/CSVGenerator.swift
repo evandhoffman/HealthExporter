@@ -15,9 +15,10 @@ class CSVGenerator {
     }()
     
     static func generateWeightCSV(from samples: [HKQuantitySample], unit: WeightUnit) -> String {
+        let sorted = samples.sorted { $0.startDate < $1.startDate }
         var lines: [String] = ["Date,ISO8601,Metric,Value,Unit"]
-        lines.reserveCapacity(samples.count + 1)
-        for sample in samples {
+        lines.reserveCapacity(sorted.count + 1)
+        for sample in sorted {
             let date = dateFormatter.string(from: sample.startDate)
             let iso8601 = iso8601Formatter.string(from: sample.startDate)
             let weightKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
@@ -28,9 +29,10 @@ class CSVGenerator {
     }
 
     static func generateStepsCSV(from samples: [HKQuantitySample]) -> String {
+        let sorted = samples.sorted { $0.startDate < $1.startDate }
         var lines: [String] = ["Date,ISO8601,Metric,Value,Unit"]
-        lines.reserveCapacity(samples.count + 1)
-        for sample in samples {
+        lines.reserveCapacity(sorted.count + 1)
+        for sample in sorted {
             let date = dateFormatter.string(from: sample.startDate)
             let iso8601 = iso8601Formatter.string(from: sample.startDate)
             let steps = sample.quantity.doubleValue(for: HKUnit.count())
@@ -43,8 +45,9 @@ class CSVGenerator {
         var lines: [String] = ["Date,ISO8601,Metric,Value,Unit"]
         
         if let weightSamples = weightSamples {
-            lines.reserveCapacity(lines.capacity + weightSamples.count)
-            for sample in weightSamples {
+            let sorted = weightSamples.sorted { $0.startDate < $1.startDate }
+            lines.reserveCapacity(lines.capacity + sorted.count)
+            for sample in sorted {
                 let date = dateFormatter.string(from: sample.startDate)
                 let iso8601 = iso8601Formatter.string(from: sample.startDate)
                 let weightKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
@@ -52,10 +55,11 @@ class CSVGenerator {
                 lines.append("\(date),\(iso8601),Weight,\(String(format: "%.2f", value)),\(unitString)")
             }
         }
-        
+
         if let stepsSamples = stepsSamples {
-            lines.reserveCapacity(lines.capacity + stepsSamples.count)
-            for sample in stepsSamples {
+            let sorted = stepsSamples.sorted { $0.startDate < $1.startDate }
+            lines.reserveCapacity(lines.capacity + sorted.count)
+            for sample in sorted {
                 let date = dateFormatter.string(from: sample.startDate)
                 let iso8601 = iso8601Formatter.string(from: sample.startDate)
                 let steps = sample.quantity.doubleValue(for: HKUnit.count())
@@ -64,17 +68,19 @@ class CSVGenerator {
         }
 
         if let glucoseSamples = glucoseSamples {
-            lines.reserveCapacity(lines.capacity + glucoseSamples.count)
-            for sample in glucoseSamples {
+            let sorted = glucoseSamples.sorted { $0.startDate < $1.startDate }
+            lines.reserveCapacity(lines.capacity + sorted.count)
+            for sample in sorted {
                 let date = dateFormatter.string(from: sample.startDate)
                 let iso8601 = iso8601Formatter.string(from: sample.startDate)
                 lines.append("\(date),\(iso8601),Blood Glucose,\(String(format: "%.0f", sample.value)),mg/dL")
             }
         }
-        
+
         if let a1cSamples = a1cSamples {
-            lines.reserveCapacity(lines.capacity + a1cSamples.count)
-            for sample in a1cSamples {
+            let sorted = a1cSamples.sorted { $0.effectiveDateTime < $1.effectiveDateTime }
+            lines.reserveCapacity(lines.capacity + sorted.count)
+            for sample in sorted {
                 let date = dateFormatter.string(from: sample.effectiveDateTime)
                 let iso8601 = iso8601Formatter.string(from: sample.effectiveDateTime)
                 lines.append("\(date),\(iso8601),Hemoglobin A1C,\(String(format: "%.2f", sample.value)),\(sample.unit)")
