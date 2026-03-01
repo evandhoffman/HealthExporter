@@ -16,20 +16,14 @@ class HealthKitManager {
         let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
         
         var typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
-        
-        // Clinical Records for Hemoglobin A1C (requires iOS 15.0+)
-        // NOTE: Requires 'NSHealthClinicalHealthRecordsShareUsageDescription' in Info.plist
-        // Only add if available and provisioning profile supports it
-        if BuildConfig.hasPaidDeveloperAccount {
-            if #available(iOS 15.0, *) {
-                if let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
-                    typesToRead.insert(clinicalType)
-                }
-            }
-        }
-        
+
         let typesToWrite: Set<HKSampleType> = [weightType, stepsType, glucoseType]
-        
+
+        // Clinical Records auth for A1C requires the health-records entitlement,
+        // which must be granted by Apple. Requesting it without the entitlement
+        // throws an uncatchable NSException. Skip until entitlement is obtained.
+        // TODO: Add clinical records auth here once Apple grants the entitlement
+
         healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { success, error in
             completion(success, error)
         }
