@@ -17,15 +17,13 @@ class HealthKitManager {
         
         var typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
 
-        let typesToWrite: Set<HKSampleType> = [weightType, stepsType, glucoseType]
-
         // Add Clinical Records for A1C if the paid account entitlement is available
         if HealthMetrics.a1c.isAvailable,
            let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
             typesToRead.insert(clinicalType)
         }
 
-        healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead) { success, error in
+        healthStore.requestAuthorization(toShare: Set(), read: typesToRead) { success, error in
             completion(success, error)
         }
     }
@@ -67,27 +65,6 @@ class HealthKitManager {
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
         let query = HKSampleQuery(sampleType: stepsType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
-            completion(samples as? [HKQuantitySample], error)
-        }
-        healthStore.execute(query)
-    }
-
-    func fetchBloodGlucoseData(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
-        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
-
-        var predicate: NSPredicate? = nil
-        if let dateRange = dateRange {
-            let calendar = Calendar.current
-            let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-            guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else {
-                completion(nil, nil)
-                return
-            }
-            predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
-        }
-
-        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-        let query = HKSampleQuery(sampleType: glucoseType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, samples, error in
             completion(samples as? [HKQuantitySample], error)
         }
         healthStore.execute(query)

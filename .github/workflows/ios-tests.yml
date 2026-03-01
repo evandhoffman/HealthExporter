@@ -25,17 +25,6 @@ jobs:
           sudo xcode-select -s "$XCODE"
           xcodebuild -version
 
-      - name: Cache CocoaPods
-        uses: actions/cache@v4
-        with:
-          path: Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
-
-      - name: Install CocoaPods dependencies
-        run: pod install --repo-update
-
       - name: List available simulators
         run: xcrun simctl list devices available | grep -E "iPhone|iPad" | head -20
 
@@ -61,7 +50,7 @@ jobs:
           echo "Running tests on simulator UDID: $SIM_UDID"
           set -o pipefail
           xcodebuild test \
-            -workspace HealthExporter.xcworkspace \
+            -project HealthExporter.xcodeproj \
             -scheme HealthExporter \
             -destination "id=$SIM_UDID" \
             -only-testing:HealthExporterTests \

@@ -9,14 +9,14 @@ HealthExporter is an iOS SwiftUI app that exports Apple HealthKit data (Weight, 
 ## Build & Run
 
 ```bash
-# Open workspace in Xcode
-open HealthExporter.xcworkspace
+# Open project in Xcode
+open HealthExporter.xcodeproj
 
 # Command-line build (Debug)
-xcodebuild -workspace HealthExporter.xcworkspace -scheme HealthExporter -configuration Debug
+xcodebuild -project HealthExporter.xcodeproj -scheme HealthExporter -configuration Debug
 
 # Command-line build (Release/Archive)
-xcodebuild -workspace HealthExporter.xcworkspace -scheme HealthExporter -configuration Release archive
+xcodebuild -project HealthExporter.xcodeproj -scheme HealthExporter -configuration Release archive
 ```
 
 **Important**: HealthKit requires a **physical iOS device** for full testing. The simulator has limited HealthKit support. Use "Generate Test Data" (in Settings, simulator-only) for UI development.
@@ -98,11 +98,11 @@ Date,ISO8601,Metric,Value,Unit,Source
 
 - **HealthKit**: Always required (enabled in Signing & Capabilities)
 - **Clinical Health Records**: Required for A1C; only enable when `BuildConfig.hasPaidDeveloperAccount == true`
-- Info.plist keys set via Build Settings (`INFOPLIST_KEY_*`): `NSHealthShareUsageDescription`, `NSHealthUpdateUsageDescription`, `NSHealthClinicalHealthRecordsShareUsageDescription`
+- Info.plist keys set via Build Settings (`INFOPLIST_KEY_*`): `NSHealthShareUsageDescription`, `NSHealthClinicalHealthRecordsShareUsageDescription`
 
 ## A1C Status
 
-Hemoglobin A1C export is **untested end-to-end**. The code compiles and is gated behind `BuildConfig.hasPaidDeveloperAccount`, but has not been verified on a device with Clinical Health Records enabled. See `docs/a1c/` for FHIR/LOINC implementation details.
+Hemoglobin A1C export has been verified working on a physical device with Clinical Health Records enabled. The feature is gated behind `BuildConfig.hasPaidDeveloperAccount`. See `docs/a1c/` for FHIR/LOINC implementation details.
 
 ## Documentation
 
