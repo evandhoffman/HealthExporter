@@ -85,8 +85,8 @@ HealthKit datasets can be very large. Always:
 ## CSV Format
 
 ```
-Date,ISO8601,Metric,Value,Unit
-2026-01-09 10:30:00,2026-01-09T10:30:00Z,Weight,185.50,lbs
+Date,ISO8601,Metric,Value,Unit,Source
+2026-01-09 10:30:00,2026-01-09T10:30:00Z,Weight,185.50,lbs,Withings
 ```
 
 - **Date**: `yyyy-MM-dd HH:mm:ss` (local time, Excel-friendly)
