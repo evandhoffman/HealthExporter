@@ -40,6 +40,14 @@ struct LaunchView: View {
                             .cornerRadius(10)
                     }
 
+                }
+                .transition(.opacity)
+            }
+
+            Spacer()
+
+            if !isLaunching {
+                VStack(spacing: 12) {
                     Button(action: {
                         showingSettings = true
                     }) {
@@ -50,11 +58,18 @@ struct LaunchView: View {
                         .font(.body)
                         .foregroundColor(.blue)
                     }
+
+                    Link(destination: URL(string: "https://github.com/evandhoffman/HealthExporter/issues/new?template=bug_report.md")!) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "exclamationmark.bubble")
+                            Text("Report a Problem")
+                        }
+                        .font(.body)
+                        .foregroundColor(.blue)
+                    }
                 }
                 .transition(.opacity)
             }
-
-            Spacer()
 
             Text("\u{00A9} \(String(Calendar.current.component(.year, from: Date()))) Evan Hoffman")
                 .font(.footnote)
