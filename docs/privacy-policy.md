@@ -1,3 +1,9 @@
+---
+layout: page
+title: Privacy Policy
+permalink: /privacy-policy/
+---
+
 # Privacy Policy — HealthExporterCSV
 
 **Last updated:** March 2026
