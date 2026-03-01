@@ -7,6 +7,7 @@ private let logger = Logger(subsystem: "com.HealthExporter", category: "HealthSa
 struct GlucoseSampleMgDl {
     let startDate: Date
     let value: Double // mg/dL value (e.g., 145.0 for 145 mg/dL)
+    let source: String
 
     init?(from sample: HKQuantitySample) {
         let glucoseUnit = HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci))
@@ -18,6 +19,7 @@ struct GlucoseSampleMgDl {
         }
         self.startDate = sample.startDate
         self.value = mgDlValue
+        self.source = sample.sourceRevision.source.name
     }
 }
 
@@ -85,12 +87,14 @@ struct A1CSample {
     let effectiveDateTime: Date
     let value: Double // A1C value as percentage (e.g., 7.5 for 7.5%)
     let unit: String // Unit from FHIR (typically "%")
-    
+    let source: String
+
     /// Memberwise initializer for use in tests and previews.
-    init(effectiveDateTime: Date, value: Double, unit: String) {
+    init(effectiveDateTime: Date, value: Double, unit: String, source: String = "") {
         self.effectiveDateTime = effectiveDateTime
         self.value = value
         self.unit = unit
+        self.source = source
     }
 
     /// Creates an A1C sample from a clinical record FHIR resource
@@ -100,9 +104,10 @@ struct A1CSample {
         guard let result = FHIRLabResultParser.extractLabResult(from: clinicalRecord, loincCode: LOINCCode.hemoglobinA1C) else {
             return nil
         }
-        
+
         self.effectiveDateTime = result.effectiveDateTime
         self.value = result.value
         self.unit = result.unit
+        self.source = clinicalRecord.sourceRevision.source.name
     }
 }

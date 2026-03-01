@@ -416,6 +416,7 @@
 				CODE_SIGN_ENTITLEMENTS = HealthExporter/HealthExporter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 94S5PZTVPY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HealthExporter/Info.plist;
@@ -453,6 +454,7 @@
 				CODE_SIGN_ENTITLEMENTS = HealthExporter/HealthExporter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 94S5PZTVPY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HealthExporter/Info.plist;

@@ -26,12 +26,12 @@ final class CSVGeneratorTests: XCTestCase {
 
     func testGenerateWeightCSV_emptyInput_returnsHeaderOnly() {
         let csv = CSVGenerator.generateWeightCSV(from: [], unit: .kilograms)
-        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit\n")
+        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit,Source\n")
     }
 
     func testGenerateWeightCSV_hasCorrectHeader() {
         let csv = CSVGenerator.generateWeightCSV(from: [], unit: .kilograms)
-        XCTAssertTrue(csv.hasPrefix("Date,ISO8601,Metric,Value,Unit"))
+        XCTAssertTrue(csv.hasPrefix("Date,ISO8601,Metric,Value,Unit,Source"))
     }
 
     func testGenerateWeightCSV_kilograms_formatsCorrectly() {
@@ -46,7 +46,7 @@ final class CSVGeneratorTests: XCTestCase {
         XCTAssertEqual(lines.count, 2)
         XCTAssertTrue(lines[1].contains(",Weight,"))
         XCTAssertTrue(lines[1].contains(",75.00,"))
-        XCTAssertTrue(lines[1].hasSuffix(",kg"))
+        XCTAssertTrue(lines[1].contains(",kg,"))
     }
 
     func testGenerateWeightCSV_pounds_convertsFromKg() {
@@ -107,7 +107,7 @@ final class CSVGeneratorTests: XCTestCase {
 
     func testGenerateStepsCSV_emptyInput_returnsHeaderOnly() {
         let csv = CSVGenerator.generateStepsCSV(from: [])
-        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit\n")
+        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit,Source\n")
     }
 
     func testGenerateStepsCSV_formatsCorrectly() {
@@ -120,7 +120,7 @@ final class CSVGeneratorTests: XCTestCase {
         let csv = CSVGenerator.generateStepsCSV(from: [sample])
         XCTAssertTrue(csv.contains(",Steps,"))
         XCTAssertTrue(csv.contains(",8500,"))
-        XCTAssertTrue(csv.hasSuffix(",steps\n"))
+        XCTAssertTrue(csv.contains(",steps,"))
     }
 
     func testGenerateStepsCSV_stepsFormattedAsInteger() {
@@ -145,7 +145,7 @@ final class CSVGeneratorTests: XCTestCase {
             a1cSamples: nil,
             weightUnit: .kilograms
         )
-        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit\n")
+        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit,Source\n")
     }
 
     func testGenerateCombinedCSV_allEmpty_returnsHeaderOnly() {
@@ -156,7 +156,7 @@ final class CSVGeneratorTests: XCTestCase {
             a1cSamples: [],
             weightUnit: .kilograms
         )
-        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit\n")
+        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit,Source\n")
     }
 
     func testGenerateCombinedCSV_weightOnly_containsWeightRow() {
