@@ -1,0 +1,38 @@
+name: Bump Build Number
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  bump:
+    name: Increment CURRENT_PROJECT_VERSION
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump build number
+        run: |
+          FILE="HealthExporter.xcodeproj/project.pbxproj"
+          # Read current build number (first occurrence)
+          CURRENT=$(grep -m1 'CURRENT_PROJECT_VERSION' "$FILE" | sed 's/[^0-9]//g')
+          NEXT=$((CURRENT + 1))
+          echo "Bumping build number: $CURRENT -> $NEXT"
+          sed -i "s/CURRENT_PROJECT_VERSION = $CURRENT;/CURRENT_PROJECT_VERSION = $NEXT;/g" "$FILE"
+          # Verify all occurrences were updated
+          grep 'CURRENT_PROJECT_VERSION' "$FILE"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add HealthExporter.xcodeproj/project.pbxproj
+          git commit -m "Bump build number to $(grep -m1 'CURRENT_PROJECT_VERSION' HealthExporter.xcodeproj/project.pbxproj | sed 's/[^0-9]//g') [skip ci]"
+          git push
