@@ -357,6 +357,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = HealthExporterCSV;
 				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "HealthExporter needs access to your clinical health records to export your Hemoglobin A1C results.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "HealthExporter needs access to your health data to export your weight, steps, and glucose measurements.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthExporter does not write to HealthKit. This permission is not requested at runtime.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -394,6 +395,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = HealthExporterCSV;
 				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "HealthExporter needs access to your clinical health records to export your Hemoglobin A1C results.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "HealthExporter needs access to your health data to export your weight, steps, and glucose measurements.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthExporter does not write to HealthKit. This permission is not requested at runtime.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
