@@ -1,6 +1,38 @@
 import Foundation
 import Combine
 
+enum DateFormatOption: String, CaseIterable {
+    case yyyyMMddHHmmss = "yyyy-MM-dd HH:mm:ss"
+    case iso8601 = "ISO8601"
+    case yyyySlashMMddHHmmss = "yyyy/MM/dd HH:mm:ss"
+    case MMddyyyyHHmmss = "MM/dd/yyyy HH:mm:ss"
+    case ddMMMyyyyHHmmss = "dd MMM yyyy HH:mm:ss"
+
+    var displayName: String {
+        switch self {
+        case .yyyyMMddHHmmss: return "yyyy-MM-dd HH:mm:ss"
+        case .iso8601: return "ISO8601 (UTC)"
+        case .yyyySlashMMddHHmmss: return "yyyy/MM/dd HH:mm:ss"
+        case .MMddyyyyHHmmss: return "MM/dd/yyyy HH:mm:ss"
+        case .ddMMMyyyyHHmmss: return "dd MMM yyyy HH:mm:ss"
+        }
+    }
+
+    var dateFormat: String {
+        switch self {
+        case .yyyyMMddHHmmss: return "yyyy-MM-dd HH:mm:ss"
+        case .iso8601: return "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        case .yyyySlashMMddHHmmss: return "yyyy/MM/dd HH:mm:ss"
+        case .MMddyyyyHHmmss: return "MM/dd/yyyy HH:mm:ss"
+        case .ddMMMyyyyHHmmss: return "dd MMM yyyy HH:mm:ss"
+        }
+    }
+
+    var isUTC: Bool {
+        self == .iso8601
+    }
+}
+
 enum TemperatureUnit: String, CaseIterable {
     case celsius = "Celsius (°C)"
     case fahrenheit = "Fahrenheit (°F)"
@@ -24,6 +56,7 @@ class SettingsManager: ObservableObject {
     @Published var exportSteps: Bool
     @Published var exportGlucose: Bool
     @Published var exportA1C: Bool
+    @Published var dateFormat: DateFormatOption
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -36,6 +69,9 @@ class SettingsManager: ObservableObject {
 
         let distanceSpeedUnitRaw = UserDefaults.standard.string(forKey: "distanceSpeedUnit") ?? DistanceSpeedUnit.metric.rawValue
         self.distanceSpeedUnit = DistanceSpeedUnit(rawValue: distanceSpeedUnitRaw) ?? .metric
+
+        let dateFormatRaw = UserDefaults.standard.string(forKey: "dateFormat") ?? DateFormatOption.yyyyMMddHHmmss.rawValue
+        self.dateFormat = DateFormatOption(rawValue: dateFormatRaw) ?? .yyyyMMddHHmmss
 
         // Load metric preferences (default to exporting weight and steps)
         self.exportWeight = UserDefaults.standard.object(forKey: "exportWeight") as? Bool ?? true
@@ -65,6 +101,11 @@ class SettingsManager: ObservableObject {
         $distanceSpeedUnit
             .dropFirst()
             .sink { UserDefaults.standard.set($0.rawValue, forKey: "distanceSpeedUnit") }
+            .store(in: &cancellables)
+
+        $dateFormat
+            .dropFirst()
+            .sink { UserDefaults.standard.set($0.rawValue, forKey: "dateFormat") }
             .store(in: &cancellables)
 
         $exportWeight

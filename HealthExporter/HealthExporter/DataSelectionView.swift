@@ -333,7 +333,7 @@ struct DataSelectionView: View {
                     return
                 }
 
-                csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, a1cSamples: a1cSamples, weightUnit: self.settings.weightUnit)
+                csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, a1cSamples: a1cSamples, weightUnit: self.settings.weightUnit, dateFormat: self.settings.dateFormat)
 
                 weightSamples = nil
                 stepsSamples = nil

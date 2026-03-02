@@ -85,12 +85,16 @@ HealthKit datasets can be very large. Always:
 ## CSV Format
 
 ```
-Date,ISO8601,Metric,Value,Unit,Source
-2026-01-09 10:30:00,2026-01-09T10:30:00Z,Weight,185.50,lbs,Withings
+Date,Metric,Value,Unit,Source
+2026-01-09 10:30:00,Weight,185.50,lbs,Withings
 ```
 
-- **Date**: `yyyy-MM-dd HH:mm:ss` (local time, Excel-friendly)
-- **ISO8601**: `yyyy-MM-dd'T'HH:mm:ssZ` (UTC)
+- **Date**: Single column, format selectable in Settings via `DateFormatOption`
+  - `yyyy-MM-dd HH:mm:ss` (default, local time, Excel-friendly)
+  - `ISO8601` (UTC)
+  - `yyyy/MM/dd HH:mm:ss`
+  - `MM/dd/yyyy HH:mm:ss`
+  - `dd MMM yyyy HH:mm:ss`
 - Filename: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 - Weight precision: 2 decimal places
 
