@@ -333,12 +333,33 @@ struct DataSelectionView: View {
                     return
                 }
 
-                csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, a1cSamples: a1cSamples, weightUnit: self.settings.weightUnit, dateFormat: self.settings.dateFormat, sortOrder: self.settings.sortOrder)
+                let dateFormat = self.settings.dateFormat
+                let sortOrder = self.settings.sortOrder
+                let weightUnit = self.settings.weightUnit
 
-                weightSamples = nil
-                stepsSamples = nil
-                glucoseSamples = nil
-                a1cSamples = nil
+                var csv = CSVGenerator.csvHeader + "\n"
+
+                if var samples = weightSamples {
+                    weightSamples = nil
+                    CSVGenerator.appendWeightRows(to: &csv, samples: &samples, unit: weightUnit, dateFormat: dateFormat, sortOrder: sortOrder)
+                }
+
+                if var samples = stepsSamples {
+                    stepsSamples = nil
+                    CSVGenerator.appendStepsRows(to: &csv, samples: &samples, dateFormat: dateFormat, sortOrder: sortOrder)
+                }
+
+                if var samples = glucoseSamples {
+                    glucoseSamples = nil
+                    CSVGenerator.appendGlucoseRows(to: &csv, samples: &samples, dateFormat: dateFormat, sortOrder: sortOrder)
+                }
+
+                if var samples = a1cSamples {
+                    a1cSamples = nil
+                    CSVGenerator.appendA1CRows(to: &csv, samples: &samples, dateFormat: dateFormat, sortOrder: sortOrder)
+                }
+
+                csvContent = csv
 
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
