@@ -246,6 +246,7 @@ struct DataSelectionView: View {
                 csvContent = ""
             case .failure(let error):
                 logger.error("Error saving file: \(error.localizedDescription)")
+                csvContent = ""
                 errorMessage = ExportError.fileWriteFailed(underlying: error).localizedDescription
                 showErrorAlert = true
             }
