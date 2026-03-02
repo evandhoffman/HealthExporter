@@ -21,9 +21,9 @@ class CSVGenerator {
         return field
     }
 
-    static func generateWeightCSV(from samples: [HKQuantitySample], unit: WeightUnit, dateFormat: DateFormatOption = .yyyyMMddHHmmss) -> String {
+    static func generateWeightCSV(from samples: [HKQuantitySample], unit: WeightUnit, dateFormat: DateFormatOption = .yyyyMMddHHmmss, sortOrder: SortOrder = .ascending) -> String {
         let dateFormatter = makeDateFormatter(for: dateFormat)
-        let sorted = samples.sorted { $0.startDate < $1.startDate }
+        let sorted = samples.sorted { sortOrder == .ascending ? $0.startDate < $1.startDate : $0.startDate > $1.startDate }
         var lines: [String] = [csvHeader]
         lines.reserveCapacity(sorted.count + 1)
         for sample in sorted {
@@ -36,9 +36,9 @@ class CSVGenerator {
         return lines.joined(separator: "\n") + "\n"
     }
 
-    static func generateStepsCSV(from samples: [HKQuantitySample], dateFormat: DateFormatOption = .yyyyMMddHHmmss) -> String {
+    static func generateStepsCSV(from samples: [HKQuantitySample], dateFormat: DateFormatOption = .yyyyMMddHHmmss, sortOrder: SortOrder = .ascending) -> String {
         let dateFormatter = makeDateFormatter(for: dateFormat)
-        let sorted = samples.sorted { $0.startDate < $1.startDate }
+        let sorted = samples.sorted { sortOrder == .ascending ? $0.startDate < $1.startDate : $0.startDate > $1.startDate }
         var lines: [String] = [csvHeader]
         lines.reserveCapacity(sorted.count + 1)
         for sample in sorted {
@@ -50,12 +50,13 @@ class CSVGenerator {
         return lines.joined(separator: "\n") + "\n"
     }
 
-    static func generateCombinedCSV(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?, glucoseSamples: [GlucoseSampleMgDl]?, a1cSamples: [A1CSample]?, weightUnit: WeightUnit, dateFormat: DateFormatOption = .yyyyMMddHHmmss) -> String {
+    static func generateCombinedCSV(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?, glucoseSamples: [GlucoseSampleMgDl]?, a1cSamples: [A1CSample]?, weightUnit: WeightUnit, dateFormat: DateFormatOption = .yyyyMMddHHmmss, sortOrder: SortOrder = .ascending) -> String {
         let dateFormatter = makeDateFormatter(for: dateFormat)
+        let ascending = sortOrder == .ascending
         var lines: [String] = [csvHeader]
 
         if let weightSamples = weightSamples {
-            let sorted = weightSamples.sorted { $0.startDate < $1.startDate }
+            let sorted = weightSamples.sorted { ascending ? $0.startDate < $1.startDate : $0.startDate > $1.startDate }
             lines.reserveCapacity(lines.capacity + sorted.count)
             for sample in sorted {
                 let date = dateFormatter.string(from: sample.startDate)
@@ -67,7 +68,7 @@ class CSVGenerator {
         }
 
         if let stepsSamples = stepsSamples {
-            let sorted = stepsSamples.sorted { $0.startDate < $1.startDate }
+            let sorted = stepsSamples.sorted { ascending ? $0.startDate < $1.startDate : $0.startDate > $1.startDate }
             lines.reserveCapacity(lines.capacity + sorted.count)
             for sample in sorted {
                 let date = dateFormatter.string(from: sample.startDate)
@@ -78,7 +79,7 @@ class CSVGenerator {
         }
 
         if let glucoseSamples = glucoseSamples {
-            let sorted = glucoseSamples.sorted { $0.startDate < $1.startDate }
+            let sorted = glucoseSamples.sorted { ascending ? $0.startDate < $1.startDate : $0.startDate > $1.startDate }
             lines.reserveCapacity(lines.capacity + sorted.count)
             for sample in sorted {
                 let date = dateFormatter.string(from: sample.startDate)
@@ -88,7 +89,7 @@ class CSVGenerator {
         }
 
         if let a1cSamples = a1cSamples {
-            let sorted = a1cSamples.sorted { $0.effectiveDateTime < $1.effectiveDateTime }
+            let sorted = a1cSamples.sorted { ascending ? $0.effectiveDateTime < $1.effectiveDateTime : $0.effectiveDateTime > $1.effectiveDateTime }
             lines.reserveCapacity(lines.capacity + sorted.count)
             for sample in sorted {
                 let date = dateFormatter.string(from: sample.effectiveDateTime)

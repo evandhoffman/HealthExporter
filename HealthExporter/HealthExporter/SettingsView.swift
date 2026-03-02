@@ -4,9 +4,9 @@ struct SettingsView: View {
     @ObservedObject var settings: SettingsManager
     @Environment(\.dismiss) var dismiss
     @State private var testDataMessage = ""
-    
+
     let healthManager = HealthKitManager()
-    
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -17,6 +17,11 @@ struct SettingsView: View {
                                 Text(option.displayName).tag(option)
                             }
                         }
+                        Picker("Sort Order", selection: $settings.sortOrder) {
+                            ForEach(SortOrder.allCases, id: \.self) { order in
+                                Text(order.rawValue).tag(order)
+                            }
+                        }
                     }
 
                     Section(header: Text("Units")) {
@@ -25,20 +30,20 @@ struct SettingsView: View {
                                 Text(unit.rawValue).tag(unit)
                             }
                         }
-                        
+
                         Picker("Weight", selection: $settings.weightUnit) {
                             ForEach(WeightUnit.allCases, id: \.self) { unit in
                                 Text(unit.rawValue).tag(unit)
                             }
                         }
-                        
+
                         Picker("Distance/Speed", selection: $settings.distanceSpeedUnit) {
                             ForEach(DistanceSpeedUnit.allCases, id: \.self) { unit in
                                 Text(unit.rawValue).tag(unit)
                             }
                         }
                     }
-                    
+
                     #if targetEnvironment(simulator)
                     Section(header: Text("Testing")) {
                         Button(action: generateTestData) {
@@ -78,7 +83,7 @@ struct SettingsView: View {
             }
         }
     }
-    
+
     #if targetEnvironment(simulator)
     private func generateTestData() {
         healthManager.generateTestData { success, error in

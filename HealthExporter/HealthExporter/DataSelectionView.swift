@@ -18,34 +18,34 @@ struct DataSelectionView: View {
     @State private var exportEnabled = false
     @State private var errorMessage: String?
     @State private var showErrorAlert = false
-    
+
     @ObservedObject var settings: SettingsManager
     let healthManager = HealthKitManager()
-    
+
     private var isValidDateRange: Bool {
         startDate <= endDate
     }
-    
+
     private func isValidNumber(_ text: String) -> Bool {
         if let number = Int(text), number > 0 {
             return true
         }
         return false
     }
-    
+
     private var hasSelectedMetric: Bool {
-        settings.exportWeight || 
-        settings.exportSteps || 
-        settings.exportGlucose || 
+        settings.exportWeight ||
+        settings.exportSteps ||
+        settings.exportGlucose ||
         (HealthMetrics.a1c.isAvailable && settings.exportA1C)
     }
-    
+
     private func updateExportEnabled() {
         guard hasSelectedMetric else {
             exportEnabled = false
             return
         }
-        
+
         switch selectedDateRangeOption {
         case .lastXDays:
             exportEnabled = isValidNumber(lastXDaysValue)
@@ -63,22 +63,22 @@ struct DataSelectionView: View {
             Text("Select Data to Export")
                 .font(.largeTitle)
                 .padding()
-            
+
             Toggle(isOn: $settings.exportWeight) {
                 Text("Weight")
             }
             .padding(.horizontal)
-            
+
             Toggle(isOn: $settings.exportSteps) {
                 Text("Steps")
             }
             .padding(.horizontal)
-            
+
             Toggle(isOn: $settings.exportGlucose) {
                 Text("Blood Glucose (mg/dL)")
             }
             .padding(.horizontal)
-            
+
             HStack {
                 HStack(spacing: 4) {
                     Text("Hemoglobin A1C (%)")
@@ -123,11 +123,11 @@ struct DataSelectionView: View {
 
             Divider()
                 .padding()
-            
+
             Text("Date Range")
                 .font(.headline)
                 .padding(.horizontal)
-            
+
             Picker("Date Range", selection: $selectedDateRangeOption) {
                 ForEach(DateRangeOption.allCases, id: \.self) { option in
                     Text(option.displayName).tag(option)
@@ -135,7 +135,7 @@ struct DataSelectionView: View {
             }
             .pickerStyle(.segmented)
             .padding()
-            
+
             // Last X Days Option
             if selectedDateRangeOption == .lastXDays {
                 HStack {
@@ -147,7 +147,7 @@ struct DataSelectionView: View {
                 }
                 .padding()
             }
-            
+
             // Last X Records Option
             if selectedDateRangeOption == .lastXRecords {
                 HStack {
@@ -159,7 +159,7 @@ struct DataSelectionView: View {
                 }
                 .padding()
             }
-            
+
             // Specific Date Range Option
             if selectedDateRangeOption == .specificDateRange {
                 VStack(alignment: .leading, spacing: 12) {
@@ -170,7 +170,7 @@ struct DataSelectionView: View {
                         DatePicker("", selection: $startDate, displayedComponents: .date)
                             .datePickerStyle(.compact)
                     }
-                    
+
                     VStack(alignment: .leading) {
                         Text("End Date")
                             .font(.subheadline)
@@ -181,33 +181,33 @@ struct DataSelectionView: View {
                 }
                 .padding()
             }
-            
+
             Spacer()
-            
+
             if !hasSelectedMetric {
                 Text("Please select at least one metric")
                     .font(.caption)
                     .foregroundColor(.red)
             }
-            
+
             if selectedDateRangeOption == .lastXDays && !isValidNumber(lastXDaysValue) {
                 Text("Please enter a positive number of days")
                     .font(.caption)
                     .foregroundColor(.red)
             }
-            
+
             if selectedDateRangeOption == .lastXRecords && !isValidNumber(lastXRecordsValue) {
                 Text("Please enter a positive number of records")
                     .font(.caption)
                     .foregroundColor(.red)
             }
-            
+
             if selectedDateRangeOption == .specificDateRange && !isValidDateRange {
                 Text("End date must be on or after start date")
                     .font(.caption)
                     .foregroundColor(.red)
             }
-            
+
             Button(action: {
                 exportData()
             }) {
@@ -264,7 +264,7 @@ struct DataSelectionView: View {
             Text(errorMessage ?? "An unknown error occurred.")
         }
     }
-    
+
     private func exportData() {
         healthManager.requestAuthorization(includeA1C: settings.exportA1C) { success, error in
             guard success else {
@@ -333,7 +333,7 @@ struct DataSelectionView: View {
                     return
                 }
 
-                csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, a1cSamples: a1cSamples, weightUnit: self.settings.weightUnit, dateFormat: self.settings.dateFormat)
+                csvContent = CSVGenerator.generateCombinedCSV(weightSamples: weightSamples, stepsSamples: stepsSamples, glucoseSamples: glucoseSamples, a1cSamples: a1cSamples, weightUnit: self.settings.weightUnit, dateFormat: self.settings.dateFormat, sortOrder: self.settings.sortOrder)
 
                 weightSamples = nil
                 stepsSamples = nil
@@ -349,7 +349,7 @@ struct DataSelectionView: View {
             }
         }
     }
-    
+
     private func getDateRangeForOption() -> (startDate: Date, endDate: Date)? {
         switch selectedDateRangeOption {
         case .lastXDays:
@@ -366,7 +366,7 @@ struct DataSelectionView: View {
             return nil
         }
     }
-    
+
     private func getRecordLimitForOption() -> Int {
         switch selectedDateRangeOption {
         case .lastXDays, .allRecords, .specificDateRange:
@@ -375,7 +375,7 @@ struct DataSelectionView: View {
             return Int(lastXRecordsValue) ?? 100
         }
     }
-    
+
 }
 
 struct DataSelectionView_Previews: PreviewProvider {
