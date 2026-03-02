@@ -11,6 +11,14 @@ struct SettingsView: View {
         NavigationStack {
             VStack {
                 Form {
+                    Section(header: Text("Export Format")) {
+                        Picker("Date Format", selection: $settings.dateFormat) {
+                            ForEach(DateFormatOption.allCases, id: \.self) { option in
+                                Text(option.displayName).tag(option)
+                            }
+                        }
+                    }
+
                     Section(header: Text("Units")) {
                         Picker("Temperature", selection: $settings.temperatureUnit) {
                             ForEach(TemperatureUnit.allCases, id: \.self) { unit in

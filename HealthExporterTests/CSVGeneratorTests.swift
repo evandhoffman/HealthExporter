@@ -26,12 +26,12 @@ final class CSVGeneratorTests: XCTestCase {
 
     func testGenerateWeightCSV_emptyInput_returnsHeaderOnly() {
         let csv = CSVGenerator.generateWeightCSV(from: [], unit: .kilograms)
-        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit,Source\n")
+        XCTAssertEqual(csv, "Date,Metric,Value,Unit,Source\n")
     }
 
     func testGenerateWeightCSV_hasCorrectHeader() {
         let csv = CSVGenerator.generateWeightCSV(from: [], unit: .kilograms)
-        XCTAssertTrue(csv.hasPrefix("Date,ISO8601,Metric,Value,Unit,Source"))
+        XCTAssertTrue(csv.hasPrefix("Date,Metric,Value,Unit,Source"))
     }
 
     func testGenerateWeightCSV_kilograms_formatsCorrectly() {
@@ -91,14 +91,14 @@ final class CSVGeneratorTests: XCTestCase {
         XCTAssertEqual(lines.count, 6) // 1 header + 5 data rows
     }
 
-    func testGenerateWeightCSV_iso8601FieldIsUTC() {
+    func testGenerateWeightCSV_iso8601Format_usesUTC() {
         let sample = HKQuantitySample(
             type: weightType,
             quantity: HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: 70.0),
             start: referenceDate,
             end: referenceDate
         )
-        let csv = CSVGenerator.generateWeightCSV(from: [sample], unit: .kilograms)
+        let csv = CSVGenerator.generateWeightCSV(from: [sample], unit: .kilograms, dateFormat: .iso8601)
         XCTAssertTrue(csv.contains("T"), "ISO8601 field should contain 'T' separator")
         XCTAssertTrue(csv.contains("Z"), "ISO8601 field should end with 'Z' for UTC")
     }
@@ -107,7 +107,7 @@ final class CSVGeneratorTests: XCTestCase {
 
     func testGenerateStepsCSV_emptyInput_returnsHeaderOnly() {
         let csv = CSVGenerator.generateStepsCSV(from: [])
-        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit,Source\n")
+        XCTAssertEqual(csv, "Date,Metric,Value,Unit,Source\n")
     }
 
     func testGenerateStepsCSV_formatsCorrectly() {
@@ -145,7 +145,7 @@ final class CSVGeneratorTests: XCTestCase {
             a1cSamples: nil,
             weightUnit: .kilograms
         )
-        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit,Source\n")
+        XCTAssertEqual(csv, "Date,Metric,Value,Unit,Source\n")
     }
 
     func testGenerateCombinedCSV_allEmpty_returnsHeaderOnly() {
@@ -156,7 +156,7 @@ final class CSVGeneratorTests: XCTestCase {
             a1cSamples: [],
             weightUnit: .kilograms
         )
-        XCTAssertEqual(csv, "Date,ISO8601,Metric,Value,Unit,Source\n")
+        XCTAssertEqual(csv, "Date,Metric,Value,Unit,Source\n")
     }
 
     func testGenerateCombinedCSV_weightOnly_containsWeightRow() {
@@ -311,5 +311,55 @@ final class CSVGeneratorTests: XCTestCase {
             weightUnit: .kilograms
         )
         XCTAssertTrue(csv.contains(",146,"), "Glucose should be rounded to nearest integer")
+    }
+
+    // MARK: - Date Format Options
+
+    func testGenerateCombinedCSV_iso8601Format_usesUTCTimestamps() {
+        let sample = HKQuantitySample(
+            type: weightType,
+            quantity: HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: 80.0),
+            start: referenceDate,
+            end: referenceDate
+        )
+        let csv = CSVGenerator.generateCombinedCSV(
+            weightSamples: [sample],
+            stepsSamples: nil,
+            glucoseSamples: nil,
+            a1cSamples: nil,
+            weightUnit: .kilograms,
+            dateFormat: .iso8601
+        )
+        XCTAssertTrue(csv.contains("2024-01-15T09:30:00Z"))
+    }
+
+    func testGenerateCombinedCSV_slashFormat_usesSlashes() {
+        let sample = HKQuantitySample(
+            type: weightType,
+            quantity: HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: 80.0),
+            start: referenceDate,
+            end: referenceDate
+        )
+        let csv = CSVGenerator.generateCombinedCSV(
+            weightSamples: [sample],
+            stepsSamples: nil,
+            glucoseSamples: nil,
+            a1cSamples: nil,
+            weightUnit: .kilograms,
+            dateFormat: .yyyySlashMMddHHmmss
+        )
+        XCTAssertTrue(csv.contains("/"))
+    }
+
+    func testGenerateCombinedCSV_singleDateColumn() {
+        let csv = CSVGenerator.generateCombinedCSV(
+            weightSamples: nil,
+            stepsSamples: nil,
+            glucoseSamples: nil,
+            a1cSamples: nil,
+            weightUnit: .kilograms
+        )
+        XCTAssertTrue(csv.hasPrefix("Date,Metric,"), "Should have single Date column, not Date,ISO8601")
+        XCTAssertFalse(csv.contains("ISO8601"), "Should not have separate ISO8601 column")
     }
 }
