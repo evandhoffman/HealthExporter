@@ -3,7 +3,7 @@
 ## Overview
 Hemoglobin A1C export capability has been successfully added to HealthExporter. This feature allows users to export their A1C lab results from HealthKit's Clinical Records.
 
-> Testing status: This A1C functionality is currently untested end-to-end because there is no paid Apple Developer account available to enable Clinical Health Records during development. The implementation is present and behind capability checks, but it has not been validated on-device.
+> Testing status: A1C export has been verified working end-to-end on a physical device with Clinical Health Records enabled.
 
 ## Implementation Details
 
@@ -51,7 +51,7 @@ func fetchA1CData(dateRange: (startDate: Date, endDate: Date)? = nil,
   - Metric name: "Hemoglobin A1C"
   - Value formatted to 2 decimal places
   - Unit: From FHIR resource (typically "%")
-  - Example row: `2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%,Apple Health`
+  - Example row: `2026-01-15 14:30:00,Hemoglobin A1C,7.50,%,Apple Health`
 
 ## Required Configuration
 
@@ -126,11 +126,11 @@ The implementation includes comprehensive error handling:
 ## CSV Output Example
 
 ```csv
-Date,ISO8601,Metric,Value,Unit,Source
-2026-01-15 14:30:00,2026-01-15T14:30:00Z,Weight,185.50,lbs,Withings
-2026-01-15 14:30:00,2026-01-15T14:30:00Z,Steps,5432,steps,Apple Watch
-2026-01-15 14:30:00,2026-01-15T14:30:00Z,Blood Glucose,145,mg/dL,MyFitnessPal
-2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%,Apple Health
+Date,Metric,Value,Unit,Source
+2026-01-15 14:30:00,Weight,185.50,lbs,Withings
+2026-01-15 14:30:00,Steps,5432,steps,Apple Watch
+2026-01-15 14:30:00,Blood Glucose,145,mg/dL,MyFitnessPal
+2026-01-15 14:30:00,Hemoglobin A1C,7.50,%,Apple Health
 ```
 
 ## Integration with Existing Flow

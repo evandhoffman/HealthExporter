@@ -17,20 +17,17 @@ Tests live in `HealthExporterTests/` (sibling to the main `HealthExporter/` sour
 ## Running Tests Locally
 
 ### In Xcode
-1. Open `HealthExporter.xcworkspace`
+1. Open `HealthExporter.xcodeproj`
 2. Select **Product → Test** (⌘U)
 3. Results appear in the Test Navigator (⌘6)
 
 ### From the command line
 ```bash
-# Install dependencies first (if not already done)
-pod install
-
 # Run tests against the latest available simulator
 xcodebuild test \
-  -workspace HealthExporter.xcworkspace \
+  -project HealthExporter.xcodeproj \
   -scheme HealthExporter \
-  -destination 'platform=iOS Simulator,OS=latest,name=iPhone 16 Pro' \
+  -destination 'platform=iOS Simulator,OS=latest,name=iPhone 17 Pro' \
   CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
   | xcpretty
 ```
@@ -69,10 +66,6 @@ The workflow pipes `xcodebuild` output through `xcpretty` for readable CI logs. 
   run: gem install xcpretty
 ```
 before the "Run tests" step.
-
-### CocoaPods caching
-
-The workflow caches the `Pods/` directory keyed on `Podfile.lock`. If you add or update pods, the cache is automatically invalidated on the next run.
 
 ## Adding New Tests
 

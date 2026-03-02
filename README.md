@@ -7,7 +7,9 @@ A privacy-focused iOS app that exports Apple HealthKit data to CSV files. All da
 - **Privacy-first design**: All processing on-device, no analytics, no tracking, no accounts
 - **Multiple health metrics**: Export Weight, Steps, Blood Glucose (mg/dL), and Hemoglobin A1C (%)
 - **Flexible date ranges**: Last X days, last X records, custom date range, or all data
-- **Unit preferences**: Configure weight units (kg/lbs), temperature (°C/°F), and distance/speed (metric/imperial)
+- **Unit preferences**: Configure weight units (kg/lbs), temperature (°C/°F), and distance/speed (metric/imperial); defaults to US units (Fahrenheit, lbs, imperial)
+- **Selectable date format**: Choose from 5 date formats including ISO8601 (UTC), `yyyy-MM-dd HH:mm:ss`, `MM/dd/yyyy HH:mm:ss`, and more
+- **Sort order**: Export rows in ascending (oldest first) or descending (newest first) order
 - **Dual export options**:
   - **Save**: Save directly to Files app via `.fileExporter()`
   - **Share**: Share via iOS share sheet (Dropbox, Google Drive, email, etc.)
@@ -37,7 +39,7 @@ A privacy-focused iOS app that exports Apple HealthKit data to CSV files. All da
 
 ## Setup
 
-1. Open `HealthExporter.xcworkspace` in Xcode
+1. Open `HealthExporter.xcodeproj` in Xcode
 2. Ensure HealthKit is enabled in Signing & Capabilities
 3. If using Hemoglobin A1C export with a paid Apple Developer account, enable **Clinical Health Records** capability (see [A1C docs](docs/a1c/) for details)
 4. Build and run on a physical device (HealthKit has limited simulator support)
@@ -57,23 +59,32 @@ The exported CSV includes the following columns:
 
 | Column | Description |
 |--------|-------------|
-| **Date** | Timestamp in Excel-friendly format (`yyyy-MM-dd HH:mm:ss`, local time) |
-| **ISO8601** | Timestamp in ISO8601 format (`yyyy-MM-dd'T'HH:mm:ssZ`, UTC) |
+| **Date** | Timestamp in user-selected format (see below) |
 | **Metric** | Type of measurement (Weight, Steps, Blood Glucose, Hemoglobin A1C) |
 | **Value** | Numeric value (weight/A1C: 2 decimal places; glucose: integer; steps: integer) |
 | **Unit** | Unit of measurement (kg, lbs, steps, mg/dL, %) |
 | **Source** | The app or device that recorded the data (e.g., Withings, Apple Watch) |
 
+### Date Format Options
+
+| Format | Example |
+|--------|---------|
+| `yyyy-MM-dd HH:mm:ss` (default) | 2026-01-09 10:30:00 |
+| ISO8601 (UTC) | 2026-01-09T10:30:00Z |
+| `yyyy/MM/dd HH:mm:ss` | 2026/01/09 10:30:00 |
+| `MM/dd/yyyy HH:mm:ss` | 01/09/2026 10:30:00 |
+| `dd MMM yyyy HH:mm:ss` | 09 Jan 2026 10:30:00 |
+
 Example:
 ```
-Date,ISO8601,Metric,Value,Unit,Source
-2026-01-09 10:30:00,2026-01-09T10:30:00Z,Weight,185.50,lbs,Withings
-2026-01-09 11:00:00,2026-01-09T11:00:00Z,Steps,5432,steps,Apple Watch
-2026-01-09 14:30:00,2026-01-09T14:30:00Z,Blood Glucose,145,mg/dL,MyFitnessPal
-2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%,Apple Health
+Date,Metric,Value,Unit,Source
+2026-01-09 10:30:00,Weight,185.50,lbs,Withings
+2026-01-09 11:00:00,Steps,5432,steps,Apple Watch
+2026-01-09 14:30:00,Blood Glucose,145,mg/dL,MyFitnessPal
+2026-01-15 14:30:00,Hemoglobin A1C,7.50,%,Apple Health
 ```
 
-Data is sorted chronologically within each metric type. Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`.
+Data can be sorted ascending (oldest first) or descending (newest first) within each metric type. Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`.
 
 ## Requirements
 
@@ -95,7 +106,7 @@ Unit tests run automatically in GitHub Actions CI on every push and PR. See [doc
 
 ### A1C Testing Status
 
-Hemoglobin A1C export is currently **untested end-to-end**. The code compiles and is gated behind availability checks, but Clinical Health Records requires a paid Apple Developer account and a physical device with synced clinical records. See [docs/a1c/](docs/a1c/) for implementation details.
+Hemoglobin A1C export has been **verified working end-to-end** on a physical device with Clinical Health Records enabled. The feature is gated behind `BuildConfig.hasPaidDeveloperAccount`. See [docs/a1c/](docs/a1c/) for implementation details.
 
 ## Project Structure
 
@@ -107,17 +118,15 @@ HealthExporter/
 │   ├── Info.plist
 │   └── HealthExporter/
 │       ├── HealthExporterApp.swift      # App entry point, NavigationStack
-│       ├── LaunchView.swift             # Splash screen with spinner
-│       ├── SplashView.swift             # Main menu with settings access
+│       ├── LaunchView.swift             # Splash screen with spinner + settings access
 │       ├── DataSelectionView.swift      # Metric selection & export UI
-│       ├── SettingsView.swift           # Unit preferences & test data
+│       ├── SettingsView.swift           # Unit/format preferences & test data
 │       ├── PrivacyPolicyView.swift      # Privacy policy & disclaimer
 │       ├── HealthKitManager.swift       # HealthKit auth & data fetching
 │       ├── HealthMetricConfig.swift     # Central metric registry
 │       ├── HealthSampleTypes.swift      # Glucose, A1C, FHIR parsing
 │       ├── CSVGenerator.swift           # CSV generation & unit conversion
 │       ├── CSVDocument.swift            # FileDocument for saving
-│       ├── ShareSheet.swift             # UIActivityViewController wrapper
 │       ├── SettingsManager.swift        # UserDefaults persistence
 │       ├── DateRangeOption.swift        # Date range selection enum
 │       ├── ExportError.swift            # Localized error types
@@ -167,7 +176,7 @@ Your health data is used solely to generate CSV export files on your device. Spe
 
 ### Data Storage
 
-The only data HealthExporter stores persistently is your unit preferences (e.g., lbs vs. kg) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.
+The only data HealthExporter stores persistently is your preferences (unit selections, date format, sort order) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.
 
 ### No Data Collection or Transmission
 
