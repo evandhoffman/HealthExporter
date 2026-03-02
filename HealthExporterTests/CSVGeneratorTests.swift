@@ -362,4 +362,48 @@ final class CSVGeneratorTests: XCTestCase {
         XCTAssertTrue(csv.hasPrefix("Date,Metric,"), "Should have single Date column, not Date,ISO8601")
         XCTAssertFalse(csv.contains("ISO8601"), "Should not have separate ISO8601 column")
     }
+
+    // MARK: - Sort Order
+
+    func testGenerateCombinedCSV_descendingOrder_newestFirst() {
+        let olderDate = referenceDate
+        let newerDate = Calendar.current.date(byAdding: .day, value: 1, to: referenceDate)!
+
+        let sample1 = HKQuantitySample(
+            type: weightType,
+            quantity: HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: 70.0),
+            start: olderDate,
+            end: olderDate
+        )
+        let sample2 = HKQuantitySample(
+            type: weightType,
+            quantity: HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: 80.0),
+            start: newerDate,
+            end: newerDate
+        )
+
+        let csvAsc = CSVGenerator.generateCombinedCSV(
+            weightSamples: [sample2, sample1],
+            stepsSamples: nil,
+            glucoseSamples: nil,
+            a1cSamples: nil,
+            weightUnit: .kilograms,
+            sortOrder: .ascending
+        )
+        let linesAsc = csvAsc.components(separatedBy: "\n").filter { !$0.isEmpty }
+        XCTAssertTrue(linesAsc[1].contains("70.00"), "Ascending: older (70kg) should come first")
+        XCTAssertTrue(linesAsc[2].contains("80.00"), "Ascending: newer (80kg) should come second")
+
+        let csvDesc = CSVGenerator.generateCombinedCSV(
+            weightSamples: [sample1, sample2],
+            stepsSamples: nil,
+            glucoseSamples: nil,
+            a1cSamples: nil,
+            weightUnit: .kilograms,
+            sortOrder: .descending
+        )
+        let linesDesc = csvDesc.components(separatedBy: "\n").filter { !$0.isEmpty }
+        XCTAssertTrue(linesDesc[1].contains("80.00"), "Descending: newer (80kg) should come first")
+        XCTAssertTrue(linesDesc[2].contains("70.00"), "Descending: older (70kg) should come second")
+    }
 }

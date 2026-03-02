@@ -33,6 +33,11 @@ enum DateFormatOption: String, CaseIterable {
     }
 }
 
+enum SortOrder: String, CaseIterable {
+    case ascending = "Oldest → Newest"
+    case descending = "Newest → Oldest"
+}
+
 enum TemperatureUnit: String, CaseIterable {
     case celsius = "Celsius (°C)"
     case fahrenheit = "Fahrenheit (°F)"
@@ -57,6 +62,7 @@ class SettingsManager: ObservableObject {
     @Published var exportGlucose: Bool
     @Published var exportA1C: Bool
     @Published var dateFormat: DateFormatOption
+    @Published var sortOrder: SortOrder
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -72,6 +78,9 @@ class SettingsManager: ObservableObject {
 
         let dateFormatRaw = UserDefaults.standard.string(forKey: "dateFormat") ?? DateFormatOption.yyyyMMddHHmmss.rawValue
         self.dateFormat = DateFormatOption(rawValue: dateFormatRaw) ?? .yyyyMMddHHmmss
+
+        let sortOrderRaw = UserDefaults.standard.string(forKey: "sortOrder") ?? SortOrder.ascending.rawValue
+        self.sortOrder = SortOrder(rawValue: sortOrderRaw) ?? .ascending
 
         // Load metric preferences (default to exporting weight and steps)
         self.exportWeight = UserDefaults.standard.object(forKey: "exportWeight") as? Bool ?? true
@@ -106,6 +115,11 @@ class SettingsManager: ObservableObject {
         $dateFormat
             .dropFirst()
             .sink { UserDefaults.standard.set($0.rawValue, forKey: "dateFormat") }
+            .store(in: &cancellables)
+
+        $sortOrder
+            .dropFirst()
+            .sink { UserDefaults.standard.set($0.rawValue, forKey: "sortOrder") }
             .store(in: &cancellables)
 
         $exportWeight
