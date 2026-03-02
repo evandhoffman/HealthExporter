@@ -67,14 +67,14 @@ class SettingsManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        let tempUnitRaw = UserDefaults.standard.string(forKey: "temperatureUnit") ?? TemperatureUnit.celsius.rawValue
-        self.temperatureUnit = TemperatureUnit(rawValue: tempUnitRaw) ?? .celsius
+        let tempUnitRaw = UserDefaults.standard.string(forKey: "temperatureUnit") ?? TemperatureUnit.fahrenheit.rawValue
+        self.temperatureUnit = TemperatureUnit(rawValue: tempUnitRaw) ?? .fahrenheit
 
-        let weightUnitRaw = UserDefaults.standard.string(forKey: "weightUnit") ?? WeightUnit.kilograms.rawValue
-        self.weightUnit = WeightUnit(rawValue: weightUnitRaw) ?? .kilograms
+        let weightUnitRaw = UserDefaults.standard.string(forKey: "weightUnit") ?? WeightUnit.pounds.rawValue
+        self.weightUnit = WeightUnit(rawValue: weightUnitRaw) ?? .pounds
 
-        let distanceSpeedUnitRaw = UserDefaults.standard.string(forKey: "distanceSpeedUnit") ?? DistanceSpeedUnit.metric.rawValue
-        self.distanceSpeedUnit = DistanceSpeedUnit(rawValue: distanceSpeedUnitRaw) ?? .metric
+        let distanceSpeedUnitRaw = UserDefaults.standard.string(forKey: "distanceSpeedUnit") ?? DistanceSpeedUnit.imperial.rawValue
+        self.distanceSpeedUnit = DistanceSpeedUnit(rawValue: distanceSpeedUnitRaw) ?? .imperial
 
         let dateFormatRaw = UserDefaults.standard.string(forKey: "dateFormat") ?? DateFormatOption.yyyyMMddHHmmss.rawValue
         self.dateFormat = DateFormatOption(rawValue: dateFormatRaw) ?? .yyyyMMddHHmmss
