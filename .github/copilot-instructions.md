@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-HealthExporter is an iOS app built with SwiftUI that exports HealthKit data to CSV files. The app allows users to export their weight and steps history with optional date range filtering and configurable unit preferences.
+HealthExporter is an iOS app built with SwiftUI that exports HealthKit data (Weight, Steps, Blood Glucose, Hemoglobin A1C) to CSV files. The app supports configurable date formats, sort order, unit preferences, and flexible date range filtering.
 
 ## Tech Stack
 
@@ -19,29 +19,34 @@ HealthExporter/
 ├── HealthExporter/
 │   └── HealthExporter/           # Main source folder
 │       ├── HealthExporterApp.swift   # App entry point (@main)
-│       ├── SplashView.swift          # Welcome/splash screen with settings access
+│       ├── LaunchView.swift          # Splash screen with spinner + settings access
 │       ├── DataSelectionView.swift   # Data selection, date range & export UI
-│       ├── SettingsView.swift        # Settings panel for unit preferences
+│       ├── SettingsView.swift        # Settings: export format, units, test data
 │       ├── SettingsManager.swift     # Settings persistence with UserDefaults
 │       ├── HealthKitManager.swift    # HealthKit authorization & queries
 │       ├── HealthMetricConfig.swift  # Metric configuration with availability rules
-│       ├── CSVGenerator.swift        # CSV string generation with unit conversion
+│       ├── HealthSampleTypes.swift   # Glucose, A1C, FHIR parsing
+│       ├── CSVGenerator.swift        # CSV generation with unit conversion, date format, sort order
 │       ├── CSVDocument.swift         # FileDocument for SwiftUI fileExporter
-│       ├── ShareSheet.swift          # UIActivityViewController wrapper
+│       ├── BuildConfig.swift         # Feature flags (paid account gating)
+│       ├── DateRangeOption.swift     # Date range selection enum
+│       ├── ExportError.swift         # Localized error types
+│       ├── PrivacyPolicyView.swift   # Privacy policy & disclaimer view
 │       └── Assets.xcassets/          # App assets
+├── HealthExporterTests/          # Unit tests
 └── README.md
 ```
 
 ## Architecture
 
 ### Views
-- **SplashView**: Welcome screen with "Next" button and gear icon for Settings
+- **LaunchView**: Welcome/splash screen with "Next" button and gear icon for Settings
 - **DataSelectionView**: Main screen with metric toggles (Weight, Steps, Blood Glucose, A1C), date pickers, and Save/Share buttons
-- **SettingsView**: Unit preference configuration (Temperature, Weight, Distance/Speed)
+- **SettingsView**: Export format (date format, sort order) and unit preference configuration (Temperature, Weight, Distance/Speed)
 
 ### Managers
 - **HealthKitManager**: Handles HealthKit authorization and data fetching with optional date range filtering
-- **SettingsManager**: ObservableObject that persists unit preferences via UserDefaults
+- **SettingsManager**: ObservableObject that persists unit preferences, date format, and sort order via UserDefaults
 - **HealthMetricConfig**: Defines metric metadata including `requiresPaidAccount` flag and availability checks
 
 ### Utilities
@@ -82,17 +87,24 @@ HealthExporter/
 
 ## CSV Output Format
 
-Columns: `Date, ISO8601, Metric, Value, Unit`
+Columns: `Date, Metric, Value, Unit, Source`
 
-Formatting:
-- **Date**: `yyyy-MM-dd HH:mm:ss`
-- **ISO8601**: `yyyy-MM-dd'T'HH:mm:ssZ` (UTC/Zulu)
+Date format is user-selectable in Settings via `DateFormatOption`:
+- `yyyy-MM-dd HH:mm:ss` (default, local time)
+- ISO8601 (UTC)
+- `yyyy/MM/dd HH:mm:ss`
+- `MM/dd/yyyy HH:mm:ss`
+- `dd MMM yyyy HH:mm:ss`
+
+Sort order is configurable: ascending (oldest first, default) or descending (newest first).
 
 Example:
 ```
-Date,ISO8601,Metric,Value,Unit
-2026-01-09 10:30:00,2026-01-09T10:30:00Z,Weight,185.50,lbs
-2026-01-09 11:00:00,2026-01-09T11:00:00Z,Steps,5432,steps
+Date,Metric,Value,Unit,Source
+2026-01-09 10:30:00,Weight,185.50,lbs,Withings
+2026-01-09 11:00:00,Steps,5432,steps,Apple Watch
+2026-01-09 14:30:00,Blood Glucose,145,mg/dL,MyFitnessPal
+2026-01-15 14:30:00,Hemoglobin A1C,7.50,%,Apple Health
 ```
 
 Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
@@ -107,7 +119,7 @@ Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 
 ### Testing Status
 
-- Hemoglobin A1C export is currently untested end-to-end because there is no paid Apple Developer account available to enable Clinical Health Records during development. Treat A1C functionality as experimental until verified on-device with the capability enabled.
+- Hemoglobin A1C export has been verified working end-to-end on a physical device with Clinical Health Records enabled. The feature is gated behind `BuildConfig.hasPaidDeveloperAccount`.
 
 ### Metric Availability Pattern
 

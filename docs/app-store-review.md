@@ -3,7 +3,7 @@
 **Date:** 2026-03-01
 **Bundle ID:** `com.evanhoffman.HealthExporter`
 **Platform:** iOS 26+, iPhone & iPad
-**Version:** 1.0 (Build 1)
+**Version:** 2.2.0
 
 ---
 

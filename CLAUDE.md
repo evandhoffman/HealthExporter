@@ -32,8 +32,8 @@ xcodebuild -project HealthExporter.xcodeproj -scheme HealthExporter -configurati
 |------|------|
 | `HealthKitManager.swift` | HealthKit authorization + data fetching; uses DispatchGroup for parallel concurrent queries |
 | `HealthMetricConfig.swift` | Central metric registry with `requiresPaidAccount` flags and `isAvailable` checks |
-| `SettingsManager.swift` | `@ObservableObject` persisting unit prefs to UserDefaults; forces unavailable metrics to `false` at init |
-| `CSVGenerator.swift` | Converts HKQuantitySample arrays → CSV string with unit conversion |
+| `SettingsManager.swift` | `@ObservableObject` persisting unit/format prefs to UserDefaults; forces unavailable metrics to `false` at init |
+| `CSVGenerator.swift` | Converts HKQuantitySample arrays → CSV string with unit conversion, configurable date format and sort order |
 | `BuildConfig.swift` | Feature flag: `hasPaidDeveloperAccount` gates A1C availability |
 | `DataSelectionView.swift` | Main UI: metric toggles, date range picker, Save/Share export buttons |
 
@@ -95,8 +95,10 @@ Date,Metric,Value,Unit,Source
   - `yyyy/MM/dd HH:mm:ss`
   - `MM/dd/yyyy HH:mm:ss`
   - `dd MMM yyyy HH:mm:ss`
+- **Sort Order**: Configurable via `SortOrder` enum — ascending (oldest first, default) or descending (newest first)
 - Filename: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 - Weight precision: 2 decimal places
+- Default units: Fahrenheit, lbs, imperial (US customary)
 
 ## Required Capabilities
 

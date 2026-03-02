@@ -1,6 +1,6 @@
 # ✅ Hemoglobin A1C Implementation - Quick Reference
 
-> Testing status: A1C export is currently untested end-to-end because there is no paid Apple Developer account available to enable Clinical Health Records during development. The code compiles but has not been verified on-device.
+> Testing status: A1C export has been verified working end-to-end on a physical device with Clinical Health Records enabled.
 
 ## What Was Added
 
@@ -31,7 +31,7 @@
 ### CSV Export
 - **File**: `CSVGenerator.swift`
 - **Updated**: `generateCombinedCSV()` method
-- A1C data formatted as: `Date,ISO8601,Hemoglobin A1C,Value,%`
+- A1C data formatted as: `Date,Hemoglobin A1C,Value,%,Source`
 
 ---
 
@@ -90,8 +90,8 @@ Add this key (adjust description as needed):
 
 4. **CSV Example**
    ```
-   Date,ISO8601,Metric,Value,Unit,Source
-   2026-01-15 14:30:00,2026-01-15T14:30:00Z,Hemoglobin A1C,7.50,%,Apple Health
+   Date,Metric,Value,Unit,Source
+   2026-01-15 14:30:00,Hemoglobin A1C,7.50,%,Apple Health
    ```
 
 ---
@@ -110,7 +110,7 @@ Add this key (adjust description as needed):
 ### CSV Generation
 - Seamlessly appended to existing combined CSV format
 - Follows same formatting pattern as other metrics
-- Maintains ISO8601 timestamps
+- Supports user-selectable date format and sort order
 
 ### Settings Storage
 - Uses UserDefaults like other metrics
