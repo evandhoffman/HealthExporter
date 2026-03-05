@@ -22,15 +22,21 @@ A privacy-focused iOS app that exports Apple HealthKit data to CSV files. All da
   <tr>
     <td align="center">
       <strong>Splash Screen</strong><br>
-      <img src="assets/splash_screen.PNG" alt="Splash Screen" style="border: 1px solid black; width: 300px;">
-    </td>
-    <td align="center">
-      <strong>Metric Selector</strong><br>
-      <img src="assets/metric_selector.PNG" alt="Metric Selector" style="border: 1px solid black; width: 300px;">
+      <img src="https://github.com/user-attachments/assets/f05f509a-9ab3-4255-93df-5d0923f74c9d" alt="Splash Screen" style="border: 1px solid black; width: 300px;">
     </td>
     <td align="center">
       <strong>Settings</strong><br>
-      <img src="assets/settings.PNG" alt="Settings" style="border: 1px solid black; width: 300px;">
+      <img src="https://github.com/user-attachments/assets/65be05cd-e892-4c17-9477-f5a26bbcb1f2" alt="Settings" style="border: 1px solid black; width: 300px;">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Metric Selector</strong><br>
+      <img src="https://github.com/user-attachments/assets/1c82df91-226d-4adc-8426-34d9a5327efa" alt="Metric Selector" style="border: 1px solid black; width: 300px;">
+    </td>
+    <td align="center">
+      <strong>File Saved</strong><br>
+      <img src="https://github.com/user-attachments/assets/792bb183-f877-4c83-a72c-c0866a55dbb2" alt="File Saved" style="border: 1px solid black; width: 300px;">
     </td>
   </tr>
 </table>
