@@ -34,7 +34,7 @@ Your health data is used solely to generate CSV export files on your device. Spe
 
 ## Data Storage
 
-The only data HealthExporterCSV stores persistently is your unit preferences (e.g., lbs vs. kg) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.
+The only data HealthExporterCSV stores persistently is your preferences (unit selections, date format, sort order, and metric toggle states) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.
 
 ## No Data Collection or Transmission
 

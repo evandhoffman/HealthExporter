@@ -29,7 +29,7 @@ Added `A1CSample` struct that:
 func fetchA1CData(dateRange: (startDate: Date, endDate: Date)? = nil, 
                   completion: @escaping ([A1CSample]?, Error?) -> Void)
 ```
-- Uses `HKClinicalQuery` to fetch lab result records
+- Uses `HKSampleQuery` to fetch lab result records
 - Filters for LOINC code 4548-4 (A1C) within the FHIR resource
 - Applies date range filtering post-query (clinical records don't support HKQuery date predicates)
 - Returns parsed `A1CSample` objects

@@ -52,14 +52,11 @@ HealthExporter/
 ### Utilities
 - **CSVGenerator**: Converts HKQuantitySample arrays to CSV strings with unit conversion
 - **CSVDocument**: FileDocument implementation for SwiftUI's fileExporter
-- **ShareSheet**: UIViewControllerRepresentable wrapper for UIActivityViewController
 
 ## Key Patterns
 
 1. **Navigation**: Uses NavigationStack with NavigationLink for screen transitions (no deprecated APIs)
-2. **File Export**: Two options:
-   - SwiftUI's `.fileExporter()` modifier for Save functionality
-   - UIActivityViewController (via ShareSheet) for Share functionality
+2. **File Export**: SwiftUI's `.fileExporter()` modifier for Save functionality
 3. **HealthKit Queries**: Async completion handlers with DispatchGroup for parallel fetching
 4. **Date Filtering**: Optional date range with inclusive start/end dates
 5. **Settings Persistence**: UserDefaults with @Published properties for auto-save
@@ -71,7 +68,6 @@ HealthExporter/
 - **Clinical Health Records** (A1C): Enable capability if `BuildConfig.hasPaidDeveloperAccount == true`
 - **Info.plist Keys** (set via Build Settings as INFOPLIST_KEY_*):
     - `NSHealthShareUsageDescription`
-    - `NSHealthUpdateUsageDescription`
     - `NSHealthClinicalHealthRecordsShareUsageDescription` (required for A1C export)
 
 ## Supported Health Metrics
@@ -114,7 +110,7 @@ Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 - HealthKit requires a physical iOS device for full testing (simulator has limited support)
 - Export button is disabled when no metrics are selected or date range is invalid
 - Weight values are formatted to 2 decimal places
-- Default date range is past 30 days; "All Data" toggle disables filtering
+- Default date range is past 30 days; date range is selectable via `DateRangeOption` enum (Last X Days, Last X Records, Specific Date Range, All Records)
 - Settings auto-save on change (no save button needed)
 
 ### Testing Status
@@ -159,9 +155,8 @@ Toggle("", isOn: Binding(
 - Only keep in-memory what's actively being used
 
 ### CSV Generation
-- **Use array joining instead of string concatenation**: `lines.joined(separator: "\n")` is used in the combined CSV generator
-- Pre-allocate array capacity when known: `lines.reserveCapacity(lines.capacity + samples.count)`
-- Build as strings first, then join once
+- **Use append methods**: Each metric type has a dedicated `appendXxxRows(to:samples:...)` method that sorts in-place and appends rows directly to a string buffer
+- Avoid intermediate array allocations — write directly to the output string via `csv.append()`
 
 ### View State
 - **Clear CSV content after export** - Empty `csvContent` property immediately after successful save

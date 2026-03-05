@@ -9,7 +9,7 @@ struct PrivacyPolicyView: View {
                         .font(.title)
                         .fontWeight(.bold)
 
-                    Text("Last updated: February 2026")
+                    Text("Last updated: March 2026")
                         .font(.caption)
                         .foregroundColor(.secondary)
 
@@ -41,7 +41,7 @@ struct PrivacyPolicyView: View {
 
                 Group {
                     sectionView(title: "Data Storage",
-                        body: "The only data HealthExporter stores persistently is your unit preferences (e.g., lbs vs. kg) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.")
+                        body: "The only data HealthExporter stores persistently is your preferences (unit selections, date format, sort order, and metric toggle states) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.")
 
                     sectionView(title: "No Data Collection or Transmission",
                         body: """

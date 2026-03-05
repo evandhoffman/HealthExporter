@@ -15,7 +15,7 @@
 - **File**: `HealthKitManager.swift`
 - **New Method**: `fetchA1CData(dateRange:completion:)`
 - **Updated**: `requestAuthorization()` to include clinical records access
-- Uses `HKClinicalQuery` with `HKClinicalTypeIdentifier.labResultRecord`
+- Uses `HKSampleQuery` with `HKClinicalTypeIdentifier.labResultRecord`
 
 ### User Settings
 - **File**: `SettingsManager.swift`

@@ -8,48 +8,17 @@ The app exports Apple HealthKit data (weight, steps, blood glucose, A1C) to CSV 
 
 ## Critical Issues
 
-### 1. Temporary files never cleaned up
-**Location:** `DataSelectionView.swift` — `saveToTemporaryLocation()`
+### 1. ~~Temporary files never cleaned up~~ ✅ RESOLVED
 
-`saveToTemporaryLocation()` writes CSVs to the temp directory but never deletes them. They accumulate over time.
+The share sheet and `saveToTemporaryLocation()` have been removed. The app now uses SwiftUI's `.fileExporter()` exclusively, which does not create temporary files.
 
-**Fix:** Delete the temp file after the share sheet dismisses, e.g.:
-```swift
-.sheet(isPresented: $showShareSheet, onDismiss: {
-    if let url = temporaryFileURL {
-        try? FileManager.default.removeItem(at: url)
-    }
-}) { ... }
-```
+### 2. ~~Sensitive health data in debug logs~~ ✅ RESOLVED
 
-### 2. Sensitive health data in debug logs
-**Location:** `HealthKitManager.swift`
+`print()` statements replaced with `os.Logger` using `.debug` level. Sensitive values use `privacy: .private` redaction.
 
-`print()` statements log glucose values and sample details. This is a privacy concern in production builds.
+### 3. ~~Errors silently swallowed~~ ✅ RESOLVED
 
-**Fix:** Replace `print()` with `os.Logger` and use `.debug` level so messages are stripped in release builds:
-```swift
-import os
-private let logger = Logger(subsystem: "com.yourapp.HealthExporter", category: "HealthKit")
-logger.debug("Fetched \(samples.count) samples")
-```
-
-### 3. Errors silently swallowed
-**Locations:** `DataSelectionView.swift` (lines ~238, ~243, ~360), `HealthKitManager.swift`
-
-Multiple `try?` usages and `print()` for error reporting mean the user gets no feedback when something fails (HealthKit authorization, file writes, etc.).
-
-**Fix:** Surface errors to the user via alerts:
-```swift
-@State private var errorMessage: String?
-@State private var showErrorAlert = false
-
-.alert("Export Error", isPresented: $showErrorAlert) {
-    Button("OK") { }
-} message: {
-    Text(errorMessage ?? "An unknown error occurred.")
-}
-```
+`ExportError` enum added with localized error descriptions. `DataSelectionView` now surfaces errors via `.alert()` for authorization failures, empty data, and file write failures.
 
 ---
 
@@ -74,12 +43,9 @@ Values below 20 mg/dL are silently discarded, assuming they're percentage misint
 
 **Fix:** Log filtered values at minimum. Consider making the threshold configurable or warning the user about filtered records.
 
-### 6. No validation before export
-**Location:** `CSVGenerator.swift`, `DataSelectionView.swift`
+### 6. ~~No validation before export~~ ✅ RESOLVED
 
-Users can export empty CSV files without any warning.
-
-**Fix:** Check that at least one metric returned data before generating the CSV, and show an alert if the export would be empty.
+`DataSelectionView` now checks that at least one metric returned data (`hasData` guard) and shows an `ExportError.noDataFound` alert if the export would be empty. The export button is also disabled when no metrics are selected or the date range is invalid.
 
 ---
 
@@ -120,29 +86,11 @@ Nine separate `onChange` handlers for validation logic could be grouped into a s
 ## Low-Priority / Code Quality
 
 ### 11. ~~CSV generation efficiency~~ (Resolved)
-`CSVGenerator.swift` now builds an array of lines with `reserveCapacity()` and uses `lines.joined(separator: "\n")` instead of string concatenation.
+`CSVGenerator.swift` now uses append methods that write directly to a string buffer (`csv.append()`), avoiding intermediate array allocations. Each metric type has a dedicated `appendXxxRows(to:samples:...)` method that sorts in-place and appends rows directly.
 
-### 12. Inconsistent error handling patterns
-**Location:** Codebase-wide
+### 12. ~~Inconsistent error handling patterns~~ ✅ PARTIALLY RESOLVED
 
-Mix of optional returns, NSError completions, and `print()` calls. A unified error type would improve consistency:
-```swift
-enum ExportError: LocalizedError {
-    case healthKitAuthorizationFailed
-    case fileWriteFailed
-    case csvGenerationFailed(reason: String)
-    case invalidDateRange
-
-    var errorDescription: String? {
-        switch self {
-        case .healthKitAuthorizationFailed: return "HealthKit authorization was denied."
-        case .fileWriteFailed: return "Failed to save the CSV file."
-        case .csvGenerationFailed(let reason): return "CSV generation failed: \(reason)"
-        case .invalidDateRange: return "The selected date range is invalid."
-        }
-    }
-}
-```
+`ExportError` enum added in `ExportError.swift` with cases for `healthKitAuthorizationFailed`, `noDataFound`, and `fileWriteFailed` — each with associated underlying errors and localized descriptions. HealthKit fetch methods still use completion-handler error patterns.
 
 ### 13. ~~Add unit tests~~ (Partially resolved)
 Unit tests have been added in `HealthExporterTests/`:

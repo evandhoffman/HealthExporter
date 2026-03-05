@@ -10,9 +10,7 @@ A privacy-focused iOS app that exports Apple HealthKit data to CSV files. All da
 - **Unit preferences**: Configure weight units (kg/lbs), temperature (°C/°F), and distance/speed (metric/imperial); defaults to US units (Fahrenheit, lbs, imperial)
 - **Selectable date format**: Choose from 5 date formats including ISO8601 (UTC), `yyyy-MM-dd HH:mm:ss`, `MM/dd/yyyy HH:mm:ss`, and more
 - **Sort order**: Export rows in ascending (oldest first) or descending (newest first) order
-- **Dual export options**:
-  - **Save**: Save directly to Files app via `.fileExporter()`
-  - **Share**: Share via iOS share sheet (Dropbox, Google Drive, email, etc.)
+- **CSV export**: Save directly to Files app via `.fileExporter()`
 - **Splash screen** with navigation to data selection and settings
 - **Settings persistence**: Unit preferences are automatically saved
 - **Availability gating**: A1C export requires Clinical Health Records capability and a paid Apple Developer account
@@ -51,7 +49,7 @@ A privacy-focused iOS app that exports Apple HealthKit data to CSV files. All da
 3. Tap "Next" to go to the data selection screen
 4. Select metrics to export (Weight, Steps, Blood Glucose, A1C — A1C only if available)
 5. Choose a date range option (last X days, last X records, date range, or all data)
-6. Tap "Save..." to save to Files or "Share..." to share via other apps
+6. Tap "Save..." to save to Files
 
 ## CSV Output Format
 
@@ -139,6 +137,9 @@ HealthExporter/
 │   └── GlucoseSampleTests.swift
 ├── docs/
 │   ├── TESTING.md
+│   ├── app-store-review.md
+│   ├── privacy-policy.md
+│   ├── index.md
 │   └── a1c/
 │       ├── QUICK_REFERENCE.md
 │       └── IMPLEMENTATION_GUIDE.md
@@ -148,7 +149,7 @@ HealthExporter/
 
 ## Privacy Policy
 
-*Last updated: February 2026*
+*Last updated: March 2026*
 
 ### Overview
 
@@ -176,7 +177,7 @@ Your health data is used solely to generate CSV export files on your device. Spe
 
 ### Data Storage
 
-The only data HealthExporter stores persistently is your preferences (unit selections, date format, sort order) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.
+The only data HealthExporter stores persistently is your preferences (unit selections, date format, sort order, and metric toggle states) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.
 
 ### No Data Collection or Transmission
 
