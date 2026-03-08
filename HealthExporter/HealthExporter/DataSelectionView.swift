@@ -21,7 +21,7 @@ struct DataSelectionView: View {
     let healthManager = HealthKitManager()
 
     private static let dayOptions = Array(1...30) + [60, 90, 180, 365, 730]
-    private static let recordOptions = Array(stride(from: 100, through: 10_000, by: 100))
+    private static let recordOptions = Array(stride(from: 100, through: 1_000, by: 100)) + Array(stride(from: 2_000, through: 10_000, by: 1_000))
 
     private var isValidDateRange: Bool {
         startDate <= endDate
