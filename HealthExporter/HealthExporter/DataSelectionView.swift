@@ -10,8 +10,6 @@ struct DataSelectionView: View {
     @State private var csvContent = ""
     @State private var fileName = ""
     @State private var selectedDateRangeOption: DateRangeOption = .lastXDays
-    @State private var lastXDaysValue: String = "30"
-    @State private var lastXRecordsValue: String = "100"
     @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
     @State private var endDate = Date()
     @State private var showingSaveSuccess = false
@@ -22,15 +20,11 @@ struct DataSelectionView: View {
     @ObservedObject var settings: SettingsManager
     let healthManager = HealthKitManager()
 
+    private static let dayOptions = [1, 7, 14, 30, 60, 90, 180, 365]
+    private static let recordOptions = [10, 25, 50, 100, 200, 500, 1000]
+
     private var isValidDateRange: Bool {
         startDate <= endDate
-    }
-
-    private func isValidNumber(_ text: String) -> Bool {
-        if let number = Int(text), number > 0 {
-            return true
-        }
-        return false
     }
 
     private var hasSelectedMetric: Bool {
@@ -47,14 +41,10 @@ struct DataSelectionView: View {
         }
 
         switch selectedDateRangeOption {
-        case .lastXDays:
-            exportEnabled = isValidNumber(lastXDaysValue)
-        case .lastXRecords:
-            exportEnabled = isValidNumber(lastXRecordsValue)
+        case .lastXDays, .lastXRecords, .allRecords:
+            exportEnabled = true
         case .specificDateRange:
             exportEnabled = isValidDateRange
-        case .allRecords:
-            exportEnabled = true
         }
     }
 
@@ -120,26 +110,38 @@ struct DataSelectionView: View {
 
             // Last X Days Option
             if selectedDateRangeOption == .lastXDays {
-                HStack {
+                VStack(spacing: 4) {
                     Text("Days:")
-                    TextField("30", text: $lastXDaysValue)
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 60)
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Picker("Days", selection: $settings.lastXDaysValue) {
+                        ForEach(DataSelectionView.dayOptions, id: \.self) { days in
+                            Text("\(days)").tag(days)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(height: 120)
+                    .accessibilityLabel("Number of days")
                 }
-                .padding()
+                .padding(.horizontal)
             }
 
             // Last X Records Option
             if selectedDateRangeOption == .lastXRecords {
-                HStack {
+                VStack(spacing: 4) {
                     Text("Records:")
-                    TextField("100", text: $lastXRecordsValue)
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 60)
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Picker("Records", selection: $settings.lastXRecordsValue) {
+                        ForEach(DataSelectionView.recordOptions, id: \.self) { records in
+                            Text("\(records)").tag(records)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(height: 120)
+                    .accessibilityLabel("Number of records")
                 }
-                .padding()
+                .padding(.horizontal)
             }
 
             // Specific Date Range Option
@@ -172,18 +174,6 @@ struct DataSelectionView: View {
                     .foregroundColor(.red)
             }
 
-            if selectedDateRangeOption == .lastXDays && !isValidNumber(lastXDaysValue) {
-                Text("Please enter a positive number of days")
-                    .font(.caption)
-                    .foregroundColor(.red)
-            }
-
-            if selectedDateRangeOption == .lastXRecords && !isValidNumber(lastXRecordsValue) {
-                Text("Please enter a positive number of records")
-                    .font(.caption)
-                    .foregroundColor(.red)
-            }
-
             if selectedDateRangeOption == .specificDateRange && !isValidDateRange {
                 Text("End date must be on or after start date")
                     .font(.caption)
@@ -211,8 +201,6 @@ struct DataSelectionView: View {
         .onChange(of: settings.exportGlucose) { updateExportEnabled() }
         .onChange(of: settings.exportA1C) { updateExportEnabled() }
         .onChange(of: selectedDateRangeOption) { updateExportEnabled() }
-        .onChange(of: lastXDaysValue) { updateExportEnabled() }
-        .onChange(of: lastXRecordsValue) { updateExportEnabled() }
         .onChange(of: startDate) { updateExportEnabled() }
         .onChange(of: endDate) { updateExportEnabled() }
         .fileExporter(
@@ -357,8 +345,7 @@ struct DataSelectionView: View {
     private func getDateRangeForOption() -> (startDate: Date, endDate: Date)? {
         switch selectedDateRangeOption {
         case .lastXDays:
-            if let days = Int(lastXDaysValue),
-               let start = Calendar.current.date(byAdding: .day, value: -days, to: Date()) {
+            if let start = Calendar.current.date(byAdding: .day, value: -settings.lastXDaysValue, to: Date()) {
                 return (start, Date())
             }
             return nil
@@ -376,7 +363,7 @@ struct DataSelectionView: View {
         case .lastXDays, .allRecords, .specificDateRange:
             return HKObjectQueryNoLimit
         case .lastXRecords:
-            return Int(lastXRecordsValue) ?? 100
+            return settings.lastXRecordsValue
         }
     }
 
