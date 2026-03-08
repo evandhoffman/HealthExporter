@@ -16,7 +16,7 @@ struct LaunchView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .shadow(radius: 8)
 
-            Text("Health Exporter")
+            Text("HealthExporterCSV")
                 .font(.largeTitle)
                 .fontWeight(.bold)
 

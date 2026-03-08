@@ -1,4 +1,4 @@
-# Health Exporter
+# HealthExporterCSV
 
 A privacy-focused iOS app that exports Apple HealthKit data to CSV files. All data processing happens entirely on-device — no health data is ever sent to external servers.
 
@@ -161,7 +161,7 @@ HealthExporter requests read-only access to the following Apple HealthKit data t
 - Weight
 - Step Count
 - Blood Glucose
-- Hemoglobin A1C (when available)
+- Hemoglobin A1C
 
 You control exactly which data types to share through the Apple Health permissions dialog.
 
@@ -170,7 +170,7 @@ You control exactly which data types to share through the Apple Health permissio
 Your health data is used solely to generate CSV export files on your device. Specifically:
 
 - Data is read from HealthKit only when you initiate an export
-- The CSV file is generated in memory and presented via the system share sheet or file picker
+- The CSV file is generated in memory and presented through the system file picker
 - Health data is cleared from app memory immediately after export
 - No health data is stored persistently by the app
 

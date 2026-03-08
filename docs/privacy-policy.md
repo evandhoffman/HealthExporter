@@ -19,7 +19,7 @@ HealthExporterCSV requests read-only access to the following Apple HealthKit dat
 - Weight
 - Step Count
 - Blood Glucose
-- Hemoglobin A1C (when available)
+- Hemoglobin A1C
 
 You control exactly which data types to share through the Apple Health permissions dialog.
 
