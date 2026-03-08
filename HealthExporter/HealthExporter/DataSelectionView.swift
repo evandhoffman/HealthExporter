@@ -5,6 +5,13 @@ import os
 
 private let logger = Logger(subsystem: "com.HealthExporter", category: "DataSelection")
 
+private struct PendingExportPayload {
+    var weightSamples: [HKQuantitySample]?
+    var stepsSamples: [HKQuantitySample]?
+    var glucoseSamples: [GlucoseSampleMgDl]?
+    var a1cSamples: [A1CSample]?
+}
+
 struct DataSelectionView: View {
     @State private var showingExporter = false
     @State private var csvContent = ""
@@ -13,9 +20,12 @@ struct DataSelectionView: View {
     @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
     @State private var endDate = Date()
     @State private var showingSaveSuccess = false
+    @State private var showingEstimateConfirmation = false
     @State private var exportEnabled = false
     @State private var errorMessage: String?
     @State private var showErrorAlert = false
+    @State private var pendingExportPayload: PendingExportPayload?
+    @State private var pendingExportEstimate: ExportPreviewEstimate?
 
     @ObservedObject var settings: SettingsManager
     let healthManager = HealthKitManager()
@@ -223,11 +233,22 @@ struct DataSelectionView: View {
         }
         .onDisappear {
             csvContent = ""
+            clearPendingExport()
         }
         .alert("File saved!", isPresented: $showingSaveSuccess) {
             Button("Ok!") {
                 showingSaveSuccess = false
             }
+        }
+        .alert("Export Estimate", isPresented: $showingEstimateConfirmation, presenting: pendingExportEstimate) { _ in
+            Button("Cancel", role: .cancel) {
+                clearPendingExport()
+            }
+            Button("Continue") {
+                continuePendingExport()
+            }
+        } message: { estimate in
+            Text(estimate.summaryText)
         }
         .alert("Export Error", isPresented: $showErrorAlert) {
             Button("OK") { }
@@ -282,7 +303,7 @@ struct DataSelectionView: View {
 
             if settings.exportA1C {
                 dispatchGroup.enter()
-                healthManager.fetchA1CData(dateRange: dateRange) { samples, error in
+                healthManager.fetchA1CData(dateRange: dateRange, limit: recordLimit) { samples, error in
                     a1cSamples = samples
                     dispatchGroup.leave()
                 }
@@ -305,41 +326,78 @@ struct DataSelectionView: View {
                 }
 
                 let dateFormat = self.settings.dateFormat
-                let sortOrder = self.settings.sortOrder
                 let weightUnit = self.settings.weightUnit
+                let payload = PendingExportPayload(
+                    weightSamples: weightSamples,
+                    stepsSamples: stepsSamples,
+                    glucoseSamples: glucoseSamples,
+                    a1cSamples: a1cSamples
+                )
+                let estimate = CSVGenerator.makePreviewEstimate(
+                    weightSamples: payload.weightSamples,
+                    stepsSamples: payload.stepsSamples,
+                    glucoseSamples: payload.glucoseSamples,
+                    a1cSamples: payload.a1cSamples,
+                    weightUnit: weightUnit,
+                    dateFormat: dateFormat
+                )
 
-                var csv = CSVGenerator.csvHeader + "\n"
+                clearPendingExport()
+                pendingExportPayload = payload
+                pendingExportEstimate = estimate
 
-                if var samples = weightSamples {
-                    weightSamples = nil
-                    CSVGenerator.appendWeightRows(to: &csv, samples: &samples, unit: weightUnit, dateFormat: dateFormat, sortOrder: sortOrder)
+                if estimate.shouldShowConfirmation {
+                    showingEstimateConfirmation = true
+                } else {
+                    continuePendingExport()
                 }
-
-                if var samples = stepsSamples {
-                    stepsSamples = nil
-                    CSVGenerator.appendStepsRows(to: &csv, samples: &samples, dateFormat: dateFormat, sortOrder: sortOrder)
-                }
-
-                if var samples = glucoseSamples {
-                    glucoseSamples = nil
-                    CSVGenerator.appendGlucoseRows(to: &csv, samples: &samples, dateFormat: dateFormat, sortOrder: sortOrder)
-                }
-
-                if var samples = a1cSamples {
-                    a1cSamples = nil
-                    CSVGenerator.appendA1CRows(to: &csv, samples: &samples, dateFormat: dateFormat, sortOrder: sortOrder)
-                }
-
-                csvContent = csv
-
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
-                let dateString = dateFormatter.string(from: Date())
-                fileName = "HealthExporter_\(dateString).csv"
-
-                showingExporter = true
             }
         }
+    }
+
+    private func continuePendingExport() {
+        guard var payload = pendingExportPayload else { return }
+
+        clearPendingExport()
+
+        let dateFormat = settings.dateFormat
+        let sortOrder = settings.sortOrder
+        let weightUnit = settings.weightUnit
+        var csv = CSVGenerator.csvHeader + "\n"
+
+        if var samples = payload.weightSamples {
+            payload.weightSamples = nil
+            CSVGenerator.appendWeightRows(to: &csv, samples: &samples, unit: weightUnit, dateFormat: dateFormat, sortOrder: sortOrder)
+        }
+
+        if var samples = payload.stepsSamples {
+            payload.stepsSamples = nil
+            CSVGenerator.appendStepsRows(to: &csv, samples: &samples, dateFormat: dateFormat, sortOrder: sortOrder)
+        }
+
+        if var samples = payload.glucoseSamples {
+            payload.glucoseSamples = nil
+            CSVGenerator.appendGlucoseRows(to: &csv, samples: &samples, dateFormat: dateFormat, sortOrder: sortOrder)
+        }
+
+        if var samples = payload.a1cSamples {
+            payload.a1cSamples = nil
+            CSVGenerator.appendA1CRows(to: &csv, samples: &samples, dateFormat: dateFormat, sortOrder: sortOrder)
+        }
+
+        csvContent = csv
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
+        let dateString = dateFormatter.string(from: Date())
+        fileName = "HealthExporter_\(dateString).csv"
+
+        showingExporter = true
+    }
+
+    private func clearPendingExport() {
+        pendingExportPayload = nil
+        pendingExportEstimate = nil
     }
 
     private func getDateRangeForOption() -> (startDate: Date, endDate: Date)? {
