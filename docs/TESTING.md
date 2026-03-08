@@ -10,10 +10,21 @@ Tests live in `HealthExporterTests/` (sibling to the main `HealthExporter/` sour
 
 | File | What it tests |
 |------|--------------|
+| `A1CSampleTests.swift` | `A1CSample` memberwise init, default source, value preservation |
+| `CSVDocumentTests.swift` | `CSVDocument` content storage, UTF-8 round-trip, invalid encoding detection |
 | `CSVGeneratorTests.swift` | CSV generation for weight, steps, glucose, A1C; unit conversion (kg→lbs); output formatting |
 | `DateRangeOptionTests.swift` | `DateRangeOption` enum cases, raw values, `displayName` |
-| `HealthMetricConfigTests.swift` | `HealthMetrics` static properties and `LOINCCode` constants |
+| `DayRangeSummaryFormatterTests.swift` | Date range summary text formatting |
+| `ExportErrorTests.swift` | All `ExportError.errorDescription` branches with/without underlying errors |
+| `ExportLogicTests.swift` | Export enablement, date range calculation, record limits, data availability, filename generation |
+| `ExportPreviewEstimateTests.swift` | Row count rounding, byte estimation, confirmation threshold |
+| `FHIRLabResultParserTests.swift` | FHIR JSON parsing — LOINC matching, missing fields, invalid data |
 | `GlucoseSampleTests.swift` | `GlucoseSampleMgDl` init — values ≥20 accepted, values <20 rejected |
+| `HealthKitQueryHelpersTests.swift` | Authorization type sets, day-aligned date ranges, A1C date filtering |
+| `HealthMetricConfigTests.swift` | `HealthMetrics` static properties and `LOINCCode` constants |
+| `SettingsEnumTests.swift` | Raw values, displayName, dateFormat, isUTC for all settings enums |
+| `SettingsManagerTests.swift` | Default values, persisted value reads, invalid raw value fallbacks |
+
 ## Running Tests Locally
 
 ### In Xcode
@@ -73,8 +84,36 @@ before the "Run tests" step.
 2. The `PBXFileSystemSynchronizedRootGroup` in the Xcode project picks it up automatically — no `.pbxproj` edits needed for additional test files.
 3. Use `@testable import HealthExporter` to access internal types.
 
-## Coverage Notes
+## Manual Verification Matrix
 
-- **HealthKit data fetching** (`HealthKitManager`) is not unit-tested because it requires a running HealthKit store (unavailable in CI). Test those paths on a physical device or simulator with HealthKit data.
-- **`A1CSample` / `FHIRLabResultParser`** FHIR parsing is not directly testable without `HKClinicalRecord`, which cannot be instantiated in tests. The `A1CSample` test helper init (defined as an extension in `CSVGeneratorTests.swift`) allows testing the CSV output path without a real clinical record.
-- **SwiftUI views** are not tested; consider adding UI tests or snapshot tests if view logic grows complex.
+The following items **intentionally remain outside CI unit tests** and require manual or device-based verification:
+
+### HealthKit Authorization
+- Real HealthKit authorization dialogs (grant/deny/partial)
+- Authorization state persistence across app launches
+- Behavior when HealthKit is unavailable (e.g. iPad without HealthKit)
+
+### Clinical Health Records
+- Real Clinical Health Records availability and entitlement
+- Actual A1C record retrieval from health providers
+- FHIR resource parsing with real clinical data (unit tests cover synthetic JSON)
+
+### File Export Integration
+- `.fileExporter()` integration with the iOS Files picker
+- Export to iCloud Drive, local storage, third-party file providers
+- Correct filename display and file content in the saved CSV
+
+### Simulator vs Device Differences
+- HealthKit data generated via `generateTestData()` (simulator only)
+- HealthKit read authorization behavior (simulator grants silently; device shows dialogs)
+- Clinical Records entitlement (device only — simulator cannot request clinical data)
+
+### SwiftUI View Behavior
+- Splash screen animation timing (2-second delay)
+- Settings sheet presentation and dismissal
+- Navigation flow: Launch → DataSelection → Export
+- Loading overlay during export preparation
+
+### Known Test Limitations
+- **`SettingsManager` cannot be instantiated in tests** due to a Combine/`@Published` malloc crash when a second instance is created alongside the app's `@main` `@StateObject`. Tests exercise the same logic through `UserDefaults` directly. A fix would require changing the test target to not use the app as `TEST_HOST`, or restructuring `SettingsManager` to avoid the `$property.dropFirst().sink()` pattern.
+- **`HealthKitManager` fetch methods** are tightly coupled to `HKHealthStore` and callback-based queries. The pure query construction logic is tested via `HealthKitQueryHelpers`; actual data fetching requires a device with HealthKit data.
