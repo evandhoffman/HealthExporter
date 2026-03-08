@@ -19,6 +19,7 @@ struct LaunchView: View {
             Text("HealthExporterCSV")
                 .font(.largeTitle)
                 .fontWeight(.bold)
+                .accessibilityIdentifier("appTitle")
 
             if isLaunching {
                 ProgressView()
@@ -39,6 +40,7 @@ struct LaunchView: View {
                             .foregroundColor(.white)
                             .cornerRadius(10)
                     }
+                    .accessibilityIdentifier("nextButton")
 
                 }
                 .transition(.opacity)
@@ -58,6 +60,7 @@ struct LaunchView: View {
                         .font(.body)
                         .foregroundColor(.blue)
                     }
+                    .accessibilityIdentifier("settingsButton")
 
                     Link(destination: URL(string: "https://github.com/evandhoffman/HealthExporter/issues/new?template=bug_report.md")!) {
                         HStack(spacing: 6) {
@@ -67,6 +70,7 @@ struct LaunchView: View {
                         .font(.body)
                         .foregroundColor(.blue)
                     }
+                    .accessibilityIdentifier("reportProblemLink")
                 }
                 .transition(.opacity)
             }

@@ -17,11 +17,13 @@ struct SettingsView: View {
                                 Text(option.displayName).tag(option)
                             }
                         }
+                        .accessibilityIdentifier("dateFormatPicker")
                         Picker("Sort Order", selection: $settings.sortOrder) {
                             ForEach(SortOrder.allCases, id: \.self) { order in
                                 Text(order.rawValue).tag(order)
                             }
                         }
+                        .accessibilityIdentifier("sortOrderPicker")
                     }
 
                     Section(header: Text("Units")) {
@@ -30,18 +32,21 @@ struct SettingsView: View {
                                 Text(unit.rawValue).tag(unit)
                             }
                         }
+                        .accessibilityIdentifier("temperaturePicker")
 
                         Picker("Weight", selection: $settings.weightUnit) {
                             ForEach(WeightUnit.allCases, id: \.self) { unit in
                                 Text(unit.rawValue).tag(unit)
                             }
                         }
+                        .accessibilityIdentifier("weightUnitPicker")
 
                         Picker("Distance/Speed", selection: $settings.distanceSpeedUnit) {
                             ForEach(DistanceSpeedUnit.allCases, id: \.self) { unit in
                                 Text(unit.rawValue).tag(unit)
                             }
                         }
+                        .accessibilityIdentifier("distanceSpeedPicker")
                     }
 
                     #if targetEnvironment(simulator)
@@ -79,6 +84,7 @@ struct SettingsView: View {
                     Button("Done") {
                         dismiss()
                     }
+                    .accessibilityIdentifier("doneButton")
                 }
             }
         }

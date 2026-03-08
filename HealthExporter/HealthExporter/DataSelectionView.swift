@@ -68,16 +68,19 @@ struct DataSelectionView: View {
                     Text("Weight")
                 }
                 .padding(.horizontal)
+                .accessibilityIdentifier("weightToggle")
 
                 Toggle(isOn: $settings.exportSteps) {
                     Text("Steps")
                 }
                 .padding(.horizontal)
+                .accessibilityIdentifier("stepsToggle")
 
                 Toggle(isOn: $settings.exportGlucose) {
                     Text("Blood Glucose (mg/dL)")
                 }
                 .padding(.horizontal)
+                .accessibilityIdentifier("glucoseToggle")
 
                 HStack {
                     HStack(spacing: 4) {
@@ -89,6 +92,7 @@ struct DataSelectionView: View {
                     Spacer()
                     Toggle("", isOn: $settings.exportA1C)
                     .labelsHidden()
+                    .accessibilityIdentifier("a1cToggle")
                 }
                 .padding(.horizontal)
 
@@ -117,6 +121,7 @@ struct DataSelectionView: View {
                 }
                 .pickerStyle(.segmented)
                 .padding()
+                .accessibilityIdentifier("dateRangePicker")
 
                 // Last X Days Option
                 if selectedDateRangeOption == .lastXDays {
@@ -208,6 +213,7 @@ struct DataSelectionView: View {
                 }
                 .disabled(!exportEnabled || isPreparingExport)
                 .padding()
+                .accessibilityIdentifier("exportButton")
             }
             .padding()
             .disabled(isPreparingExport)
