@@ -46,17 +46,15 @@ struct DataSelectionView: View {
     }
 
     private func updateExportEnabled() {
-        guard hasSelectedMetric else {
-            exportEnabled = false
-            return
-        }
-
-        switch selectedDateRangeOption {
-        case .lastXDays, .lastXRecords, .allRecords:
-            exportEnabled = true
-        case .specificDateRange:
-            exportEnabled = isValidDateRange
-        }
+        exportEnabled = ExportLogic.isExportEnabled(
+            exportWeight: settings.exportWeight,
+            exportSteps: settings.exportSteps,
+            exportGlucose: settings.exportGlucose,
+            exportA1C: settings.exportA1C,
+            dateRangeOption: selectedDateRangeOption,
+            startDate: startDate,
+            endDate: endDate
+        )
     }
 
     var body: some View {
@@ -299,8 +297,16 @@ struct DataSelectionView: View {
             var a1cSamples: [A1CSample]? = nil
             let dispatchGroup = DispatchGroup()
 
-            let dateRange: (startDate: Date, endDate: Date)? = getDateRangeForOption()
-            let recordLimit: Int = getRecordLimitForOption()
+            let dateRange = ExportLogic.dateRange(
+                for: self.selectedDateRangeOption,
+                lastXDays: self.settings.lastXDaysValue,
+                specificStart: self.startDate,
+                specificEnd: self.endDate
+            )
+            let recordLimit = ExportLogic.recordLimit(
+                for: self.selectedDateRangeOption,
+                lastXRecords: self.settings.lastXRecordsValue
+            )
 
             if settings.exportWeight {
                 dispatchGroup.enter()
@@ -335,10 +341,12 @@ struct DataSelectionView: View {
             }
 
             dispatchGroup.notify(queue: .main) {
-                let hasData = (weightSamples?.isEmpty == false) ||
-                              (stepsSamples?.isEmpty == false) ||
-                              (glucoseSamples?.isEmpty == false) ||
-                              (a1cSamples?.isEmpty == false)
+                let hasData = ExportLogic.hasAnyData(
+                    weightSamples: weightSamples,
+                    stepsSamples: stepsSamples,
+                    glucoseSamples: glucoseSamples,
+                    a1cSamples: a1cSamples
+                )
 
                 guard hasData else {
                     weightSamples = nil
@@ -415,10 +423,7 @@ struct DataSelectionView: View {
 
         csvContent = csv
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd_HHmmss"
-        let dateString = dateFormatter.string(from: Date())
-        fileName = "HealthExporter_\(dateString).csv"
+        fileName = ExportLogic.exportFilename()
 
         isPreparingExport = false
         showingExporter = true
@@ -429,30 +434,6 @@ struct DataSelectionView: View {
         pendingExportEstimate = nil
     }
 
-    private func getDateRangeForOption() -> (startDate: Date, endDate: Date)? {
-        switch selectedDateRangeOption {
-        case .lastXDays:
-            if let start = Calendar.current.date(byAdding: .day, value: -settings.lastXDaysValue, to: Date()) {
-                return (start, Date())
-            }
-            return nil
-        case .lastXRecords:
-            return nil
-        case .specificDateRange:
-            return (startDate, endDate)
-        case .allRecords:
-            return nil
-        }
-    }
-
-    private func getRecordLimitForOption() -> Int {
-        switch selectedDateRangeOption {
-        case .lastXDays, .allRecords, .specificDateRange:
-            return HKObjectQueryNoLimit
-        case .lastXRecords:
-            return settings.lastXRecordsValue
-        }
-    }
 
 }
 

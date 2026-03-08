@@ -1,0 +1,220 @@
+import XCTest
+import HealthKit
+@testable import HealthExporter
+
+final class ExportLogicTests: XCTestCase {
+
+    private let now = Date()
+    private let calendar = Calendar(identifier: .gregorian)
+
+    // MARK: - isExportEnabled
+
+    func testExportDisabled_noMetricsSelected() {
+        XCTAssertFalse(ExportLogic.isExportEnabled(
+            exportWeight: false, exportSteps: false, exportGlucose: false, exportA1C: false,
+            dateRangeOption: .lastXDays, startDate: now, endDate: now
+        ))
+    }
+
+    func testExportEnabled_weightOnly_lastXDays() {
+        XCTAssertTrue(ExportLogic.isExportEnabled(
+            exportWeight: true, exportSteps: false, exportGlucose: false, exportA1C: false,
+            dateRangeOption: .lastXDays, startDate: now, endDate: now
+        ))
+    }
+
+    func testExportEnabled_stepsOnly_lastXRecords() {
+        XCTAssertTrue(ExportLogic.isExportEnabled(
+            exportWeight: false, exportSteps: true, exportGlucose: false, exportA1C: false,
+            dateRangeOption: .lastXRecords, startDate: now, endDate: now
+        ))
+    }
+
+    func testExportEnabled_glucoseOnly_allRecords() {
+        XCTAssertTrue(ExportLogic.isExportEnabled(
+            exportWeight: false, exportSteps: false, exportGlucose: true, exportA1C: false,
+            dateRangeOption: .allRecords, startDate: now, endDate: now
+        ))
+    }
+
+    func testExportEnabled_a1cOnly_specificDateRange_validRange() {
+        let start = calendar.date(byAdding: .day, value: -7, to: now)!
+        XCTAssertTrue(ExportLogic.isExportEnabled(
+            exportWeight: false, exportSteps: false, exportGlucose: false, exportA1C: true,
+            dateRangeOption: .specificDateRange, startDate: start, endDate: now
+        ))
+    }
+
+    func testExportDisabled_specificDateRange_invalidRange() {
+        let start = calendar.date(byAdding: .day, value: 7, to: now)!
+        XCTAssertFalse(ExportLogic.isExportEnabled(
+            exportWeight: true, exportSteps: true, exportGlucose: true, exportA1C: true,
+            dateRangeOption: .specificDateRange, startDate: start, endDate: now
+        ))
+    }
+
+    func testExportEnabled_specificDateRange_sameDay() {
+        XCTAssertTrue(ExportLogic.isExportEnabled(
+            exportWeight: true, exportSteps: false, exportGlucose: false, exportA1C: false,
+            dateRangeOption: .specificDateRange, startDate: now, endDate: now
+        ))
+    }
+
+    func testExportEnabled_allMetricsSelected() {
+        XCTAssertTrue(ExportLogic.isExportEnabled(
+            exportWeight: true, exportSteps: true, exportGlucose: true, exportA1C: true,
+            dateRangeOption: .lastXDays, startDate: now, endDate: now
+        ))
+    }
+
+    // MARK: - dateRange
+
+    func testDateRange_lastXDays_returns7DayRange() {
+        let result = ExportLogic.dateRange(
+            for: .lastXDays, lastXDays: 7,
+            specificStart: now, specificEnd: now,
+            now: now, calendar: calendar
+        )
+        XCTAssertNotNil(result)
+        let expected = calendar.date(byAdding: .day, value: -7, to: now)!
+        XCTAssertEqual(result!.startDate.timeIntervalSinceReferenceDate,
+                       expected.timeIntervalSinceReferenceDate, accuracy: 1)
+        XCTAssertEqual(result!.endDate.timeIntervalSinceReferenceDate,
+                       now.timeIntervalSinceReferenceDate, accuracy: 1)
+    }
+
+    func testDateRange_lastXDays_returns30DayRange() {
+        let result = ExportLogic.dateRange(
+            for: .lastXDays, lastXDays: 30,
+            specificStart: now, specificEnd: now,
+            now: now, calendar: calendar
+        )
+        XCTAssertNotNil(result)
+        let expected = calendar.date(byAdding: .day, value: -30, to: now)!
+        XCTAssertEqual(result!.startDate.timeIntervalSinceReferenceDate,
+                       expected.timeIntervalSinceReferenceDate, accuracy: 1)
+    }
+
+    func testDateRange_lastXRecords_returnsNil() {
+        let result = ExportLogic.dateRange(
+            for: .lastXRecords, lastXDays: 7,
+            specificStart: now, specificEnd: now,
+            now: now, calendar: calendar
+        )
+        XCTAssertNil(result)
+    }
+
+    func testDateRange_allRecords_returnsNil() {
+        let result = ExportLogic.dateRange(
+            for: .allRecords, lastXDays: 7,
+            specificStart: now, specificEnd: now,
+            now: now, calendar: calendar
+        )
+        XCTAssertNil(result)
+    }
+
+    func testDateRange_specificDateRange_returnsProvidedDates() {
+        let start = calendar.date(byAdding: .day, value: -14, to: now)!
+        let end = calendar.date(byAdding: .day, value: -1, to: now)!
+        let result = ExportLogic.dateRange(
+            for: .specificDateRange, lastXDays: 7,
+            specificStart: start, specificEnd: end,
+            now: now, calendar: calendar
+        )
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result!.startDate, start)
+        XCTAssertEqual(result!.endDate, end)
+    }
+
+    // MARK: - recordLimit
+
+    func testRecordLimit_lastXDays_isNoLimit() {
+        XCTAssertEqual(ExportLogic.recordLimit(for: .lastXDays, lastXRecords: 100), HKObjectQueryNoLimit)
+    }
+
+    func testRecordLimit_allRecords_isNoLimit() {
+        XCTAssertEqual(ExportLogic.recordLimit(for: .allRecords, lastXRecords: 100), HKObjectQueryNoLimit)
+    }
+
+    func testRecordLimit_specificDateRange_isNoLimit() {
+        XCTAssertEqual(ExportLogic.recordLimit(for: .specificDateRange, lastXRecords: 100), HKObjectQueryNoLimit)
+    }
+
+    func testRecordLimit_lastXRecords_returnsValue() {
+        XCTAssertEqual(ExportLogic.recordLimit(for: .lastXRecords, lastXRecords: 250), 250)
+    }
+
+    func testRecordLimit_lastXRecords_returnsExactValue() {
+        XCTAssertEqual(ExportLogic.recordLimit(for: .lastXRecords, lastXRecords: 1), 1)
+        XCTAssertEqual(ExportLogic.recordLimit(for: .lastXRecords, lastXRecords: 10000), 10000)
+    }
+
+    // MARK: - hasAnyData
+
+    func testHasAnyData_allNil_returnsFalse() {
+        XCTAssertFalse(ExportLogic.hasAnyData(
+            weightSamples: nil, stepsSamples: nil,
+            glucoseSamples: nil, a1cSamples: nil
+        ))
+    }
+
+    func testHasAnyData_allEmpty_returnsFalse() {
+        XCTAssertFalse(ExportLogic.hasAnyData(
+            weightSamples: [], stepsSamples: [],
+            glucoseSamples: [], a1cSamples: []
+        ))
+    }
+
+    func testHasAnyData_withA1CSamples_returnsTrue() {
+        let sample = A1CSample(effectiveDateTime: now, value: 7.0, unit: "%")
+        XCTAssertTrue(ExportLogic.hasAnyData(
+            weightSamples: nil, stepsSamples: nil,
+            glucoseSamples: nil, a1cSamples: [sample]
+        ))
+    }
+
+    func testHasAnyData_withWeightSamples_returnsTrue() {
+        let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+        let sample = HKQuantitySample(
+            type: weightType,
+            quantity: HKQuantity(unit: .pound(), doubleValue: 180),
+            start: now, end: now
+        )
+        XCTAssertTrue(ExportLogic.hasAnyData(
+            weightSamples: [sample], stepsSamples: nil,
+            glucoseSamples: nil, a1cSamples: nil
+        ))
+    }
+
+    func testHasAnyData_mixedNilAndEmpty_returnsFalse() {
+        XCTAssertFalse(ExportLogic.hasAnyData(
+            weightSamples: nil, stepsSamples: [],
+            glucoseSamples: nil, a1cSamples: []
+        ))
+    }
+
+    // MARK: - exportFilename
+
+    func testExportFilename_matchesExpectedFormat() {
+        let filename = ExportLogic.exportFilename(for: now)
+        XCTAssertTrue(filename.hasPrefix("HealthExporter_"))
+        XCTAssertTrue(filename.hasSuffix(".csv"))
+    }
+
+    func testExportFilename_containsDate() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateStr = formatter.string(from: now)
+
+        let filename = ExportLogic.exportFilename(for: now)
+        XCTAssertTrue(filename.contains(dateStr))
+    }
+
+    func testExportFilename_deterministicForSameDate() {
+        let fixedDate = ISO8601DateFormatter().date(from: "2024-06-15T14:30:45Z")!
+        let filename = ExportLogic.exportFilename(for: fixedDate)
+        // The exact filename depends on the local timezone, but the format should be consistent
+        XCTAssertTrue(filename.hasPrefix("HealthExporter_2024-06-15_"))
+        XCTAssertTrue(filename.hasSuffix(".csv"))
+    }
+}

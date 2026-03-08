@@ -1,0 +1,81 @@
+import Foundation
+import HealthKit
+
+/// Pure logic extracted from DataSelectionView for testability.
+enum ExportLogic {
+
+    /// Whether the export button should be enabled.
+    static func isExportEnabled(
+        exportWeight: Bool,
+        exportSteps: Bool,
+        exportGlucose: Bool,
+        exportA1C: Bool,
+        dateRangeOption: DateRangeOption,
+        startDate: Date,
+        endDate: Date
+    ) -> Bool {
+        let hasSelectedMetric = exportWeight || exportSteps || exportGlucose || exportA1C
+        guard hasSelectedMetric else { return false }
+
+        switch dateRangeOption {
+        case .lastXDays, .lastXRecords, .allRecords:
+            return true
+        case .specificDateRange:
+            return startDate <= endDate
+        }
+    }
+
+    /// Computes the date range for a given option, or nil when not applicable.
+    static func dateRange(
+        for option: DateRangeOption,
+        lastXDays: Int,
+        specificStart: Date,
+        specificEnd: Date,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> (startDate: Date, endDate: Date)? {
+        switch option {
+        case .lastXDays:
+            if let start = calendar.date(byAdding: .day, value: -lastXDays, to: now) {
+                return (start, now)
+            }
+            return nil
+        case .lastXRecords:
+            return nil
+        case .specificDateRange:
+            return (specificStart, specificEnd)
+        case .allRecords:
+            return nil
+        }
+    }
+
+    /// Computes the record limit for a given option.
+    static func recordLimit(for option: DateRangeOption, lastXRecords: Int) -> Int {
+        switch option {
+        case .lastXDays, .allRecords, .specificDateRange:
+            return HKObjectQueryNoLimit
+        case .lastXRecords:
+            return lastXRecords
+        }
+    }
+
+    /// Whether any fetched data exists across all sample arrays.
+    static func hasAnyData(
+        weightSamples: [HKQuantitySample]?,
+        stepsSamples: [HKQuantitySample]?,
+        glucoseSamples: [GlucoseSampleMgDl]?,
+        a1cSamples: [A1CSample]?
+    ) -> Bool {
+        (weightSamples?.isEmpty == false) ||
+        (stepsSamples?.isEmpty == false) ||
+        (glucoseSamples?.isEmpty == false) ||
+        (a1cSamples?.isEmpty == false)
+    }
+
+    /// Generates the export filename for a given date.
+    static func exportFilename(for date: Date = Date()) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HHmmss"
+        return "HealthExporter_\(formatter.string(from: date)).csv"
+    }
+}
