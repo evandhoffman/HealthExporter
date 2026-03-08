@@ -132,6 +132,11 @@ struct DataSelectionView: View {
                     .pickerStyle(.wheel)
                     .frame(height: 120)
                     .accessibilityLabel("Number of days")
+
+                    Text(DayRangeSummaryFormatter.summaryText(forDays: settings.lastXDaysValue, relativeTo: Date()))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(.horizontal)
             }
