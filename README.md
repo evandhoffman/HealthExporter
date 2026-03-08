@@ -13,7 +13,7 @@ A privacy-focused iOS app that exports Apple HealthKit data to CSV files. All da
 - **CSV export**: Save directly to Files app via `.fileExporter()`
 - **Splash screen** with navigation to data selection and settings
 - **Settings persistence**: Unit preferences are automatically saved
-- **Availability gating**: A1C export requires Clinical Health Records capability and a paid Apple Developer account
+- **Clinical records support**: A1C export requires Clinical Health Records capability and permission
 - **Memory-optimized**: Health data is cleared from memory immediately after export
 
 ## Screenshots
@@ -39,7 +39,7 @@ A privacy-focused iOS app that exports Apple HealthKit data to CSV files. All da
 
 1. Open `HealthExporter.xcodeproj` in Xcode
 2. Ensure HealthKit is enabled in Signing & Capabilities
-3. If using Hemoglobin A1C export with a paid Apple Developer account, enable **Clinical Health Records** capability (see [A1C docs](docs/a1c/) for details)
+3. If using Hemoglobin A1C export, enable **Clinical Health Records** capability (see [A1C docs](docs/a1c/) for details)
 4. Build and run on a physical device (HealthKit has limited simulator support)
 
 ## Usage
@@ -47,7 +47,7 @@ A privacy-focused iOS app that exports Apple HealthKit data to CSV files. All da
 1. Launch the app (splash screen displays briefly)
 2. (Optional) Tap the gear icon to configure unit preferences or view the privacy policy
 3. Tap "Next" to go to the data selection screen
-4. Select metrics to export (Weight, Steps, Blood Glucose, A1C — A1C only if available)
+4. Select metrics to export (Weight, Steps, Blood Glucose, A1C)
 5. Choose a date range option (last X days, last X records, date range, or all data)
 6. Tap "Save..." to save to Files
 
@@ -89,7 +89,7 @@ Data can be sorted ascending (oldest first) or descending (newest first) within 
 - iOS 26+
 - Physical iOS device (for full HealthKit functionality)
 - HealthKit access permission
-- Clinical Health Records capability and user permission (for A1C export; paid Apple Developer account required)
+- Clinical Health Records capability and user permission (for A1C export)
 
 ## Testing
 
@@ -104,7 +104,7 @@ Unit tests run automatically in GitHub Actions CI on every push and PR. See [doc
 
 ### A1C Testing Status
 
-Hemoglobin A1C export has been **verified working end-to-end** on a physical device with Clinical Health Records enabled. The feature is gated behind `BuildConfig.hasPaidDeveloperAccount`. See [docs/a1c/](docs/a1c/) for implementation details.
+Hemoglobin A1C export has been **verified working end-to-end** on a physical device with Clinical Health Records enabled. See [docs/a1c/](docs/a1c/) for implementation details.
 
 ## Project Structure
 
@@ -128,7 +128,6 @@ HealthExporter/
 │       ├── SettingsManager.swift        # UserDefaults persistence
 │       ├── DateRangeOption.swift        # Date range selection enum
 │       ├── ExportError.swift            # Localized error types
-│       ├── BuildConfig.swift            # Feature flags
 │       └── Assets.xcassets/
 ├── HealthExporterTests/
 │   ├── CSVGeneratorTests.swift

@@ -21,6 +21,7 @@
 - **File**: `SettingsManager.swift`
 - **New Property**: `@Published var exportA1C: Bool`
 - Persists to UserDefaults with key: `"exportA1C"`
+- No developer-account gating; A1C is a standard supported metric
 
 ### User Interface
 - **File**: `DataSelectionView.swift`
@@ -159,4 +160,3 @@ Add this key (adjust description as needed):
 4. App queries for lab results with LOINC code 4548-4
 5. A1C results combined with other selected metrics in CSV
 6. File saved/shared with all data in single CSV file
-

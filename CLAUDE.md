@@ -31,10 +31,9 @@ xcodebuild -project HealthExporter.xcodeproj -scheme HealthExporter -configurati
 | File | Role |
 |------|------|
 | `HealthKitManager.swift` | HealthKit authorization + data fetching; uses DispatchGroup for parallel concurrent queries |
-| `HealthMetricConfig.swift` | Central metric registry with `requiresPaidAccount` flags and `isAvailable` checks |
-| `SettingsManager.swift` | `@ObservableObject` persisting unit/format prefs to UserDefaults; forces unavailable metrics to `false` at init |
+| `HealthMetricConfig.swift` | Central metric registry for supported export metrics |
+| `SettingsManager.swift` | `@ObservableObject` persisting unit/format prefs to UserDefaults |
 | `CSVGenerator.swift` | Converts HKQuantitySample arrays → CSV string with unit conversion, configurable date format and sort order |
-| `BuildConfig.swift` | Feature flag: `hasPaidDeveloperAccount` gates A1C availability |
 | `DataSelectionView.swift` | Main UI: metric toggles, date range picker, Save/Share export buttons |
 
 ### Export Flow
@@ -47,23 +46,14 @@ xcodebuild -project HealthExporter.xcodeproj -scheme HealthExporter -configurati
 
 ## Critical Patterns
 
-### Metric Availability (MUST follow this pattern)
-Metric availability is centrally managed in `HealthMetricConfig.swift`. When gating a metric on a paid account:
+### Metric Registry
+Supported metrics are centralized in `HealthMetricConfig.swift`. If you add a new metric:
 
-1. Set `requiresPaidAccount: true` in `HealthMetricConfig.swift`
-2. Use `HealthMetrics.{metric}.isAvailable` everywhere — never check `BuildConfig` directly
-3. In `DataSelectionView`, use a custom `Binding` that enforces unavailability:
-```swift
-Toggle("", isOn: Binding(
-    get: { HealthMetrics.a1c.isAvailable && settings.exportA1C },
-    set: { newValue in
-        if HealthMetrics.a1c.isAvailable { settings.exportA1C = newValue }
-        else { settings.exportA1C = false }
-    }
-))
-```
-4. In `SettingsManager.init()`, force unavailable metrics to `false` and remove from UserDefaults
-5. In `hasSelectedMetric`, only count metrics where `isAvailable && setting == true`
+1. Add it to `HealthMetrics`
+2. Add authorization/fetching support in `HealthKitManager`
+3. Add a toggle in `DataSelectionView`
+4. Persist its setting in `SettingsManager`
+5. Extend CSV generation and tests
 
 ### Memory Management (CRITICAL)
 HealthKit datasets can be very large. Always:
@@ -73,13 +63,13 @@ HealthKit datasets can be very large. Always:
 - Pre-allocate with `lines.reserveCapacity(...)` when count is known
 
 ### Adding a New Metric
-1. Add to `HealthMetricConfig.swift` with `requiresPaidAccount` value
+1. Add to `HealthMetricConfig.swift`
 2. Add quantity type to `HealthKitManager.requestAuthorization()`
 3. Add fetch method in `HealthKitManager`
-4. Add toggle in `DataSelectionView` using the availability binding pattern above
+4. Add toggle in `DataSelectionView`
 5. Extend `CSVGenerator.generateCombinedCSV()` for the new type
 6. Add unit conversion if needed
-7. Update `SettingsManager.init()` to force unavailable metrics to `false`
+7. Update `SettingsManager` persistence if needed
 8. Release samples after CSV generation (memory optimization)
 
 ## CSV Format
@@ -103,12 +93,12 @@ Date,Metric,Value,Unit,Source
 ## Required Capabilities
 
 - **HealthKit**: Always required (enabled in Signing & Capabilities)
-- **Clinical Health Records**: Required for A1C; only enable when `BuildConfig.hasPaidDeveloperAccount == true`
+- **Clinical Health Records**: Required for A1C export
 - Info.plist keys set via Build Settings (`INFOPLIST_KEY_*`): `NSHealthShareUsageDescription`, `NSHealthClinicalHealthRecordsShareUsageDescription`
 
 ## A1C Status
 
-Hemoglobin A1C export has been verified working on a physical device with Clinical Health Records enabled. The feature is gated behind `BuildConfig.hasPaidDeveloperAccount`. See `docs/a1c/` for FHIR/LOINC implementation details.
+Hemoglobin A1C export has been verified working on a physical device with Clinical Health Records enabled. See `docs/a1c/` for FHIR/LOINC implementation details.
 
 ## Documentation
 

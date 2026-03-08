@@ -18,7 +18,7 @@ class HealthKitManager {
         var typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
 
         // Only request Clinical Records access when A1C is actually selected
-        if includeA1C, HealthMetrics.a1c.isAvailable,
+        if includeA1C,
            let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
             typesToRead.insert(clinicalType)
         }

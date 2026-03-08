@@ -1,35 +1,25 @@
 import Foundation
 
-/// Configuration for health metrics including availability requirements
+/// Configuration for supported health metrics.
 struct HealthMetricConfig {
     let name: String
-    let requiresPaidAccount: Bool
-    
-    /// Returns true if this metric is available based on current account status
-    var isAvailable: Bool {
-        !requiresPaidAccount || BuildConfig.hasPaidDeveloperAccount
-    }
 }
 
 /// Centralized configuration for all health metrics
 enum HealthMetrics {
     static let weight = HealthMetricConfig(
-        name: "Weight",
-        requiresPaidAccount: false
+        name: "Weight"
     )
     
     static let steps = HealthMetricConfig(
-        name: "Steps",
-        requiresPaidAccount: false
+        name: "Steps"
     )
     
     static let glucose = HealthMetricConfig(
-        name: "Blood Glucose",
-        requiresPaidAccount: false
+        name: "Blood Glucose"
     )
     
     static let a1c = HealthMetricConfig(
-        name: "Hemoglobin A1C",
-        requiresPaidAccount: true
+        name: "Hemoglobin A1C"
     )
 }

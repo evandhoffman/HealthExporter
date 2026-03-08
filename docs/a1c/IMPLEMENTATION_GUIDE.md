@@ -38,6 +38,7 @@ func fetchA1CData(dateRange: (startDate: Date, endDate: Date)? = nil,
 - Added `@Published var exportA1C: Bool` property
 - Persists preference to UserDefaults with key `"exportA1C"`
 - Defaults to `false` on first app launch
+- A1C is treated as a standard supported metric; no developer-account gating remains
 
 ### 4. User Interface (DataSelectionView.swift)
 - Added toggle: "Hemoglobin A1C (%)"

@@ -37,7 +37,7 @@ struct DataSelectionView: View {
         settings.exportWeight ||
         settings.exportSteps ||
         settings.exportGlucose ||
-        (HealthMetrics.a1c.isAvailable && settings.exportA1C)
+        settings.exportA1C
     }
 
     private func updateExportEnabled() {
@@ -82,44 +82,26 @@ struct DataSelectionView: View {
             HStack {
                 HStack(spacing: 4) {
                     Text("Hemoglobin A1C (%)")
-                    if HealthMetrics.a1c.isAvailable {
-                        Image(systemName: "cross.case")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("💰")
-                            .font(.caption)
-                    }
+                    Image(systemName: "cross.case")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 Spacer()
-                Toggle("", isOn: Binding(
-                    get: { HealthMetrics.a1c.isAvailable && settings.exportA1C },
-                    set: { newValue in
-                        if HealthMetrics.a1c.isAvailable {
-                            settings.exportA1C = newValue
-                        } else {
-                            settings.exportA1C = false
-                        }
-                    }
-                ))
+                Toggle("", isOn: $settings.exportA1C)
                 .labelsHidden()
             }
             .padding(.horizontal)
-            .opacity(HealthMetrics.a1c.isAvailable ? 1.0 : 0.5)
-            .disabled(!HealthMetrics.a1c.isAvailable)
 
-            if HealthMetrics.a1c.isAvailable {
-                HStack(spacing: 4) {
-                    Image(systemName: "cross.case")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    Text("Requires access to Clinical Health Records")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 4) {
+                Image(systemName: "cross.case")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Text("Requires access to Clinical Health Records")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
+            .padding(.horizontal)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Divider()
                 .padding()
