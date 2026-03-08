@@ -63,6 +63,8 @@ class SettingsManager: ObservableObject {
     @Published var exportA1C: Bool
     @Published var dateFormat: DateFormatOption
     @Published var sortOrder: SortOrder
+    @Published var lastXDaysValue: Int
+    @Published var lastXRecordsValue: Int
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -88,6 +90,9 @@ class SettingsManager: ObservableObject {
         self.exportGlucose = UserDefaults.standard.object(forKey: "exportGlucose") as? Bool ?? false
 
         self.exportA1C = UserDefaults.standard.object(forKey: "exportA1C") as? Bool ?? false
+
+        self.lastXDaysValue = UserDefaults.standard.object(forKey: "lastXDaysValue") as? Int ?? 30
+        self.lastXRecordsValue = UserDefaults.standard.object(forKey: "lastXRecordsValue") as? Int ?? 100
 
         // Persist changes via Combine subscribers (avoids @Published + didSet crash)
         $temperatureUnit
@@ -133,6 +138,16 @@ class SettingsManager: ObservableObject {
         $exportA1C
             .dropFirst()
             .sink { UserDefaults.standard.set($0, forKey: "exportA1C") }
+            .store(in: &cancellables)
+
+        $lastXDaysValue
+            .dropFirst()
+            .sink { UserDefaults.standard.set($0, forKey: "lastXDaysValue") }
+            .store(in: &cancellables)
+
+        $lastXRecordsValue
+            .dropFirst()
+            .sink { UserDefaults.standard.set($0, forKey: "lastXRecordsValue") }
             .store(in: &cancellables)
     }
 }
