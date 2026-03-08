@@ -3,6 +3,9 @@
 ## Project Structure & Module Organization
 `HealthExporter/HealthExporter/` contains the app source: SwiftUI views (`LaunchView.swift`, `DataSelectionView.swift`, `SettingsView.swift`), managers (`HealthKitManager.swift`, `SettingsManager.swift`), and export logic (`CSVGenerator.swift`, `CSVDocument.swift`). Tests live in `HealthExporterTests/`. Keep user-facing docs in `docs/`, with feature-specific notes under subfolders such as `docs/a1c/`. Store screenshots and marketing assets in `assets/`. Project configuration is in `HealthExporter.xcodeproj/` and `HealthExporter.xcworkspace/`.
 
+## Architecture Notes
+The app flow is `HealthExporterApp` → `LaunchView` → `DataSelectionView`, with `SettingsView` presented from the launch screen. `HealthKitManager` owns authorization and data fetches, `SettingsManager` persists preferences in `UserDefaults`, and `CSVGenerator` appends rows directly into a CSV buffer. A1C support uses Clinical Health Records via `HKClinicalTypeIdentifier.labResultRecord`; see `docs/a1c/` for implementation details.
+
 ## Build, Test, and Development Commands
 Open the project in Xcode for day-to-day work:
 
@@ -24,8 +27,14 @@ xcodebuild build -project HealthExporter.xcodeproj -scheme HealthExporter -desti
 
 Use Xcode on a physical device for HealthKit and Clinical Records verification; simulator coverage is limited.
 
+## Export Flow
+The app is read-only with respect to HealthKit in production. `HealthKitManager.requestAuthorization()` calls `requestAuthorization(toShare: Set(), read: ...)`, then `DataSelectionView` fetches selected metrics, generates CSV in memory, and presents the file through SwiftUI `.fileExporter()`. Keep this flow and its surrounding privacy copy aligned whenever export behavior changes.
+
 ## Coding Style & Naming Conventions
 Follow existing Swift conventions: 4-space indentation, one top-level type per file, `UpperCamelCase` for types, `lowerCamelCase` for properties and methods. Prefer small SwiftUI views and move reusable logic into managers or helper types. Keep comments sparse and only where intent is not obvious. Match current file naming: view types end in `View`, managers end in `Manager`, tests end in `Tests`. When adding metrics, route availability through `HealthMetricConfig.swift`; do not gate UI directly on `BuildConfig`.
+
+## Implementation Patterns
+When adding a metric, update `HealthMetricConfig.swift`, request the right HealthKit type in `HealthKitManager`, add the toggle in `DataSelectionView`, persist it in `SettingsManager`, extend `CSVGenerator`, and add tests/docs in the same change. Keep export memory usage tight: release fetched sample arrays after CSV generation and clear `csvContent` after successful export.
 
 ## Testing Guidelines
 This repo uses `XCTest`. Add tests in `HealthExporterTests/` with filenames like `FeatureNameTests.swift` and methods named `test...`. Cover CSV formatting, date filtering, unit conversion, and metric availability logic. Run `Product > Test` in Xcode or the `xcodebuild test` command above before opening a PR.
@@ -34,4 +43,4 @@ This repo uses `XCTest`. Add tests in `HealthExporterTests/` with filenames like
 Recent history favors short, imperative commit subjects such as `Fix: clear csvContent on export failure to free memory`, `Update docs to match current codebase`, and version bumps like `Bump build number to 18 [skip ci]`. Keep commits focused. PRs should describe the user-visible change, list testing performed, link related issues, and include screenshots for SwiftUI/UI updates. Note any device-only validation when HealthKit behavior cannot be reproduced in CI.
 
 ## Security & Configuration Tips
-Do not commit real secrets; use `Secrets.plist.example` as the template. Keep HealthKit data on-device, avoid logging sensitive values, and preserve the privacy-first design. Export paths can hold large datasets, so release HealthKit sample arrays after CSV generation and clear temporary CSV state after save/share flows.
+Do not commit real secrets; use `Secrets.plist.example` as the template. Keep HealthKit data on-device, avoid logging sensitive values, and preserve the privacy-first design. Required capabilities are HealthKit and Clinical Health Records for A1C export, with `NSHealthShareUsageDescription` and `NSHealthClinicalHealthRecordsShareUsageDescription` set via build settings. Export paths can hold large datasets, so release HealthKit sample arrays after CSV generation and clear temporary CSV state after save flows.
