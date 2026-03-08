@@ -34,14 +34,14 @@ xcodebuild -project HealthExporter.xcodeproj -scheme HealthExporter -configurati
 | `HealthMetricConfig.swift` | Central metric registry for supported export metrics |
 | `SettingsManager.swift` | `@ObservableObject` persisting unit/format prefs to UserDefaults |
 | `CSVGenerator.swift` | Converts HKQuantitySample arrays → CSV string with unit conversion, configurable date format and sort order |
-| `DataSelectionView.swift` | Main UI: metric toggles, date range picker, Save/Share export buttons |
+| `DataSelectionView.swift` | Main UI: metric toggles, date range picker, Save export button |
 
 ### Export Flow
 1. User selects metrics + date range in `DataSelectionView`
 2. HealthKit authorization requested (if needed)
 3. `HealthKitManager` fetches selected metrics in parallel (DispatchGroup)
 4. `CSVGenerator.generateCombinedCSV()` builds output
-5. Save → SwiftUI `.fileExporter()` → Files app; Share → `ShareSheet` → `UIActivityViewController`
+5. Save → SwiftUI `.fileExporter()` → Files app
 6. Sample arrays and CSV content are cleared from memory immediately after export
 
 ## Critical Patterns
