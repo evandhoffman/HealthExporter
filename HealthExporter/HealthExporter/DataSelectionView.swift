@@ -245,6 +245,7 @@ struct DataSelectionView: View {
         }
         .onDisappear {
             csvContent = ""
+            clearPendingExport()
         }
         .alert("File saved!", isPresented: $showingSaveSuccess) {
             Button("Ok!") {
