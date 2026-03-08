@@ -95,7 +95,7 @@ class HealthKitManager {
         healthStore.execute(query)
     }
     
-    func fetchA1CData(dateRange: (startDate: Date, endDate: Date)? = nil, completion: @escaping ([A1CSample]?, Error?) -> Void) {
+    func fetchA1CData(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([A1CSample]?, Error?) -> Void) {
         // Requires iOS 15.0+ for clinical records
         guard #available(iOS 15.0, *) else {
             completion(nil, NSError(domain: "HealthKit", code: 2, userInfo: [NSLocalizedDescriptionKey: "Clinical Records require iOS 15.0 or later"]))
@@ -108,7 +108,7 @@ class HealthKitManager {
         }
         
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-        let query = HKSampleQuery(sampleType: clinicalType, predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { _, records, error in
+        let query = HKSampleQuery(sampleType: clinicalType, predicate: nil, limit: limit, sortDescriptors: [sortDescriptor]) { _, records, error in
             guard error == nil else {
                 completion(nil, error)
                 return

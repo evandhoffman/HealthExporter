@@ -1,5 +1,36 @@
 import HealthKit
 
+struct ExportPreviewEstimate {
+    let rowCount: Int
+    let estimatedByteCount: Int
+
+    var roundedRowCount: Int {
+        Self.roundedRowCount(for: rowCount)
+    }
+
+    var formattedRowCount: String {
+        roundedRowCount.formatted()
+    }
+
+    var formattedByteCount: String {
+        ByteCountFormatter.string(fromByteCount: Int64(estimatedByteCount), countStyle: .file)
+    }
+
+    var summaryText: String {
+        "This will export around \(formattedRowCount) rows (\(formattedByteCount))."
+    }
+
+    static func roundedRowCount(for count: Int) -> Int {
+        guard count > 0 else { return 0 }
+
+        if count < 1_000 {
+            return max(100, ((count + 50) / 100) * 100)
+        }
+
+        return ((count + 500) / 1_000) * 1_000
+    }
+}
+
 class CSVGenerator {
 
     static let csvHeader = "Date,Metric,Value,Unit,Source"
@@ -21,17 +52,40 @@ class CSVGenerator {
         return field
     }
 
+    private static func weightRow(for sample: HKQuantitySample, unit: WeightUnit, dateFormatter: DateFormatter) -> String {
+        let date = dateFormatter.string(from: sample.startDate)
+        let weightKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
+        let (value, unitString) = convertWeight(weightKg, to: unit)
+        let source = csvEscape(sample.sourceRevision.source.name)
+        return "\(date),Weight,\(String(format: "%.2f", value)),\(unitString),\(source)\n"
+    }
+
+    private static func stepsRow(for sample: HKQuantitySample, dateFormatter: DateFormatter) -> String {
+        let date = dateFormatter.string(from: sample.startDate)
+        let steps = sample.quantity.doubleValue(for: HKUnit.count())
+        let source = csvEscape(sample.sourceRevision.source.name)
+        return "\(date),Steps,\(Int(steps)),steps,\(source)\n"
+    }
+
+    private static func glucoseRow(for sample: GlucoseSampleMgDl, dateFormatter: DateFormatter) -> String {
+        let date = dateFormatter.string(from: sample.startDate)
+        let source = csvEscape(sample.source)
+        return "\(date),Blood Glucose,\(String(format: "%.0f", sample.value)),mg/dL,\(source)\n"
+    }
+
+    private static func a1cRow(for sample: A1CSample, dateFormatter: DateFormatter) -> String {
+        let date = dateFormatter.string(from: sample.effectiveDateTime)
+        let source = csvEscape(sample.source)
+        return "\(date),Hemoglobin A1C,\(String(format: "%.2f", sample.value)),\(sample.unit),\(source)\n"
+    }
+
     // MARK: - Append methods (memory-efficient, sort in-place, write directly to string)
 
     static func appendWeightRows(to csv: inout String, samples: inout [HKQuantitySample], unit: WeightUnit, dateFormat: DateFormatOption = .yyyyMMddHHmmss, sortOrder: SortOrder = .ascending) {
         let dateFormatter = makeDateFormatter(for: dateFormat)
         samples.sort { sortOrder == .ascending ? $0.startDate < $1.startDate : $0.startDate > $1.startDate }
         for sample in samples {
-            let date = dateFormatter.string(from: sample.startDate)
-            let weightKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
-            let (value, unitString) = convertWeight(weightKg, to: unit)
-            let source = csvEscape(sample.sourceRevision.source.name)
-            csv.append("\(date),Weight,\(String(format: "%.2f", value)),\(unitString),\(source)\n")
+            csv.append(weightRow(for: sample, unit: unit, dateFormatter: dateFormatter))
         }
     }
 
@@ -39,10 +93,7 @@ class CSVGenerator {
         let dateFormatter = makeDateFormatter(for: dateFormat)
         samples.sort { sortOrder == .ascending ? $0.startDate < $1.startDate : $0.startDate > $1.startDate }
         for sample in samples {
-            let date = dateFormatter.string(from: sample.startDate)
-            let steps = sample.quantity.doubleValue(for: HKUnit.count())
-            let source = csvEscape(sample.sourceRevision.source.name)
-            csv.append("\(date),Steps,\(Int(steps)),steps,\(source)\n")
+            csv.append(stepsRow(for: sample, dateFormatter: dateFormatter))
         }
     }
 
@@ -50,9 +101,7 @@ class CSVGenerator {
         let dateFormatter = makeDateFormatter(for: dateFormat)
         samples.sort { sortOrder == .ascending ? $0.startDate < $1.startDate : $0.startDate > $1.startDate }
         for sample in samples {
-            let date = dateFormatter.string(from: sample.startDate)
-            let source = csvEscape(sample.source)
-            csv.append("\(date),Blood Glucose,\(String(format: "%.0f", sample.value)),mg/dL,\(source)\n")
+            csv.append(glucoseRow(for: sample, dateFormatter: dateFormatter))
         }
     }
 
@@ -60,10 +109,45 @@ class CSVGenerator {
         let dateFormatter = makeDateFormatter(for: dateFormat)
         samples.sort { sortOrder == .ascending ? $0.effectiveDateTime < $1.effectiveDateTime : $0.effectiveDateTime > $1.effectiveDateTime }
         for sample in samples {
-            let date = dateFormatter.string(from: sample.effectiveDateTime)
-            let source = csvEscape(sample.source)
-            csv.append("\(date),Hemoglobin A1C,\(String(format: "%.2f", sample.value)),\(sample.unit),\(source)\n")
+            csv.append(a1cRow(for: sample, dateFormatter: dateFormatter))
         }
+    }
+
+    static func makePreviewEstimate(weightSamples: [HKQuantitySample]?, stepsSamples: [HKQuantitySample]?, glucoseSamples: [GlucoseSampleMgDl]?, a1cSamples: [A1CSample]?, weightUnit: WeightUnit, dateFormat: DateFormatOption = .yyyyMMddHHmmss) -> ExportPreviewEstimate {
+        let weightCount = weightSamples?.count ?? 0
+        let stepsCount = stepsSamples?.count ?? 0
+        let glucoseCount = glucoseSamples?.count ?? 0
+        let a1cCount = a1cSamples?.count ?? 0
+        let rowCount = weightCount + stepsCount + glucoseCount + a1cCount
+
+        let dateFormatter = makeDateFormatter(for: dateFormat)
+        var estimatedByteCount = (csvHeader + "\n").utf8.count
+
+        if let samples = weightSamples {
+            for sample in samples {
+                estimatedByteCount += weightRow(for: sample, unit: weightUnit, dateFormatter: dateFormatter).utf8.count
+            }
+        }
+
+        if let samples = stepsSamples {
+            for sample in samples {
+                estimatedByteCount += stepsRow(for: sample, dateFormatter: dateFormatter).utf8.count
+            }
+        }
+
+        if let samples = glucoseSamples {
+            for sample in samples {
+                estimatedByteCount += glucoseRow(for: sample, dateFormatter: dateFormatter).utf8.count
+            }
+        }
+
+        if let samples = a1cSamples {
+            for sample in samples {
+                estimatedByteCount += a1cRow(for: sample, dateFormatter: dateFormatter).utf8.count
+            }
+        }
+
+        return ExportPreviewEstimate(rowCount: rowCount, estimatedByteCount: estimatedByteCount)
     }
 
     // MARK: - Legacy convenience methods (used by tests and single-metric exports)
