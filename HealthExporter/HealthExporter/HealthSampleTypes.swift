@@ -42,42 +42,47 @@ struct FHIRLabResultParser {
     ///   - clinicalRecord: The HKClinicalRecord containing FHIR data
     ///   - loincCode: The LOINC code to search for (e.g., "4548-4" for Hemoglobin A1C)
     /// - Returns: Tuple of (effectiveDateTime, value, unit) if found, nil otherwise
+    /// Extracts lab result data from a clinical record for a specific LOINC code
     static func extractLabResult(from clinicalRecord: HKClinicalRecord, loincCode: String) -> (effectiveDateTime: Date, value: Double, unit: String)? {
         guard let fhirResource = clinicalRecord.fhirResource else {
             return nil
         }
-        
-        let fhirData = fhirResource.data
+        return extractLabResult(fromFHIRData: fhirResource.data, loincCode: loincCode)
+    }
+
+    /// Extracts lab result data from raw FHIR JSON data for a specific LOINC code.
+    /// This is the pure parsing logic, separated from HKClinicalRecord for testability.
+    static func extractLabResult(fromFHIRData fhirData: Data, loincCode: String) -> (effectiveDateTime: Date, value: Double, unit: String)? {
         guard let jsonObject = try? JSONSerialization.jsonObject(with: fhirData, options: []),
               let json = jsonObject as? [String: Any] else {
             return nil
         }
-        
+
         // Check if this is a lab result with the specified LOINC code
         guard let code = json["code"] as? [String: Any],
               let coding = code["coding"] as? [[String: Any]],
               coding.contains(where: { ($0["system"] as? String) == "http://loinc.org" && ($0["code"] as? String) == loincCode }) else {
             return nil
         }
-        
+
         // Extract effective date time
         guard let effectiveDateTimeStr = json["effectiveDateTime"] as? String else {
             return nil
         }
-        
+
         // Parse ISO 8601 datetime
         let iso8601Formatter = ISO8601DateFormatter()
         guard let effectiveDateTime = iso8601Formatter.date(from: effectiveDateTimeStr) else {
             return nil
         }
-        
+
         // Extract value from valueQuantity
         guard let valueQuantity = json["valueQuantity"] as? [String: Any],
               let value = valueQuantity["value"] as? NSNumber,
               let unit = valueQuantity["unit"] as? String else {
             return nil
         }
-        
+
         return (effectiveDateTime, value.doubleValue, unit)
     }
 }
