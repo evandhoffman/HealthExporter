@@ -21,6 +21,7 @@ struct DataSelectionView: View {
     @State private var endDate = Date()
     @State private var showingSaveSuccess = false
     @State private var showingEstimateConfirmation = false
+    @State private var isPreparingExport = false
     @State private var exportEnabled = false
     @State private var errorMessage: String?
     @State private var showErrorAlert = false
@@ -59,152 +60,170 @@ struct DataSelectionView: View {
     }
 
     var body: some View {
-        VStack {
-            Text("Select Data to Export")
-                .font(.largeTitle)
-                .padding()
+        ZStack {
+            VStack {
+                Text("Select Data to Export")
+                    .font(.largeTitle)
+                    .padding()
 
-            Toggle(isOn: $settings.exportWeight) {
-                Text("Weight")
-            }
-            .padding(.horizontal)
+                Toggle(isOn: $settings.exportWeight) {
+                    Text("Weight")
+                }
+                .padding(.horizontal)
 
-            Toggle(isOn: $settings.exportSteps) {
-                Text("Steps")
-            }
-            .padding(.horizontal)
+                Toggle(isOn: $settings.exportSteps) {
+                    Text("Steps")
+                }
+                .padding(.horizontal)
 
-            Toggle(isOn: $settings.exportGlucose) {
-                Text("Blood Glucose (mg/dL)")
-            }
-            .padding(.horizontal)
+                Toggle(isOn: $settings.exportGlucose) {
+                    Text("Blood Glucose (mg/dL)")
+                }
+                .padding(.horizontal)
 
-            HStack {
+                HStack {
+                    HStack(spacing: 4) {
+                        Text("Hemoglobin A1C (%)")
+                        Image(systemName: "cross.case")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Toggle("", isOn: $settings.exportA1C)
+                    .labelsHidden()
+                }
+                .padding(.horizontal)
+
                 HStack(spacing: 4) {
-                    Text("Hemoglobin A1C (%)")
                     Image(systemName: "cross.case")
-                        .font(.caption)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text("Requires access to Clinical Health Records")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
-                Spacer()
-                Toggle("", isOn: $settings.exportA1C)
-                .labelsHidden()
-            }
-            .padding(.horizontal)
-
-            HStack(spacing: 4) {
-                Image(systemName: "cross.case")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                Text("Requires access to Clinical Health Records")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Divider()
-                .padding()
-
-            Text("Date Range")
-                .font(.headline)
                 .padding(.horizontal)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            Picker("Date Range", selection: $selectedDateRangeOption) {
-                ForEach(DateRangeOption.allCases, id: \.self) { option in
-                    Text(option.displayName).tag(option)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding()
-
-            // Last X Days Option
-            if selectedDateRangeOption == .lastXDays {
-                VStack(spacing: 4) {
-                    Text("Days:")
-                        .font(.subheadline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Picker("Days", selection: $settings.lastXDaysValue) {
-                        ForEach(DataSelectionView.dayOptions, id: \.self) { days in
-                            Text("\(days)").tag(days)
-                        }
-                    }
-                    .pickerStyle(.wheel)
-                    .frame(height: 120)
-                    .accessibilityLabel("Number of days")
-                }
-                .padding(.horizontal)
-            }
-
-            // Last X Records Option
-            if selectedDateRangeOption == .lastXRecords {
-                VStack(spacing: 4) {
-                    Text("Records:")
-                        .font(.subheadline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Picker("Records", selection: $settings.lastXRecordsValue) {
-                        ForEach(DataSelectionView.recordOptions, id: \.self) { records in
-                            Text("\(records)").tag(records)
-                        }
-                    }
-                    .pickerStyle(.wheel)
-                    .frame(height: 120)
-                    .accessibilityLabel("Number of records")
-                }
-                .padding(.horizontal)
-            }
-
-            // Specific Date Range Option
-            if selectedDateRangeOption == .specificDateRange {
-                VStack(alignment: .leading, spacing: 12) {
-                    VStack(alignment: .leading) {
-                        Text("Start Date")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                        DatePicker("", selection: $startDate, displayedComponents: .date)
-                            .datePickerStyle(.compact)
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text("End Date")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                        DatePicker("", selection: $endDate, displayedComponents: .date)
-                            .datePickerStyle(.compact)
-                    }
-                }
-                .padding()
-            }
-
-            Spacer()
-
-            if !hasSelectedMetric {
-                Text("Please select at least one metric")
-                    .font(.caption)
-                    .foregroundColor(.red)
-            }
-
-            if selectedDateRangeOption == .specificDateRange && !isValidDateRange {
-                Text("End date must be on or after start date")
-                    .font(.caption)
-                    .foregroundColor(.red)
-            }
-
-            Button(action: {
-                exportData()
-            }) {
-                Text("Save...")
-                    .font(.title3)
+                Divider()
                     .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(exportEnabled ? Color.blue : Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+
+                Text("Date Range")
+                    .font(.headline)
+                    .padding(.horizontal)
+
+                Picker("Date Range", selection: $selectedDateRangeOption) {
+                    ForEach(DateRangeOption.allCases, id: \.self) { option in
+                        Text(option.displayName).tag(option)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding()
+
+                // Last X Days Option
+                if selectedDateRangeOption == .lastXDays {
+                    VStack(spacing: 4) {
+                        Text("Days:")
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Picker("Days", selection: $settings.lastXDaysValue) {
+                            ForEach(DataSelectionView.dayOptions, id: \.self) { days in
+                                Text("\(days)").tag(days)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(height: 120)
+                        .accessibilityLabel("Number of days")
+
+                        Text(DayRangeSummaryFormatter.summaryText(forDays: settings.lastXDaysValue, relativeTo: Date()))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal)
+                }
+
+                // Last X Records Option
+                if selectedDateRangeOption == .lastXRecords {
+                    VStack(spacing: 4) {
+                        Text("Records:")
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Picker("Records", selection: $settings.lastXRecordsValue) {
+                            ForEach(DataSelectionView.recordOptions, id: \.self) { records in
+                                Text("\(records)").tag(records)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(height: 120)
+                        .accessibilityLabel("Number of records")
+                    }
+                    .padding(.horizontal)
+                }
+
+                // Specific Date Range Option
+                if selectedDateRangeOption == .specificDateRange {
+                    VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading) {
+                            Text("Start Date")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            DatePicker("", selection: $startDate, displayedComponents: .date)
+                                .datePickerStyle(.compact)
+                        }
+
+                        VStack(alignment: .leading) {
+                            Text("End Date")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                            DatePicker("", selection: $endDate, displayedComponents: .date)
+                                .datePickerStyle(.compact)
+                        }
+                    }
+                    .padding()
+                }
+
+                Spacer()
+
+                if !hasSelectedMetric {
+                    Text("Please select at least one metric")
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
+
+                if selectedDateRangeOption == .specificDateRange && !isValidDateRange {
+                    Text("End date must be on or after start date")
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
+
+                Button(action: {
+                    exportData()
+                }) {
+                    Text("Save...")
+                        .font(.title3)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(exportEnabled ? Color.blue : Color.gray)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .disabled(!exportEnabled || isPreparingExport)
+                .padding()
             }
-            .disabled(!exportEnabled)
             .padding()
+            .disabled(isPreparingExport)
+
+            if isPreparingExport {
+                Color.black.opacity(0.15)
+                    .ignoresSafeArea()
+
+                ProgressView("Preparing export...")
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            }
         }
-        .padding()
         .onAppear { updateExportEnabled() }
         .onChange(of: settings.exportWeight) { updateExportEnabled() }
         .onChange(of: settings.exportSteps) { updateExportEnabled() }
@@ -224,15 +243,18 @@ struct DataSelectionView: View {
                 logger.info("File saved to: \(url.path)")
                 showingSaveSuccess = true
                 csvContent = ""
+                isPreparingExport = false
             case .failure(let error):
                 logger.error("Error saving file: \(error.localizedDescription)")
                 csvContent = ""
+                isPreparingExport = false
                 errorMessage = ExportError.fileWriteFailed(underlying: error).localizedDescription
                 showErrorAlert = true
             }
         }
         .onDisappear {
             csvContent = ""
+            isPreparingExport = false
             clearPendingExport()
         }
         .alert("File saved!", isPresented: $showingSaveSuccess) {
@@ -258,9 +280,12 @@ struct DataSelectionView: View {
     }
 
     private func exportData() {
+        isPreparingExport = true
+
         healthManager.requestAuthorization(includeA1C: settings.exportA1C) { success, error in
             guard success else {
                 DispatchQueue.main.async {
+                    isPreparingExport = false
                     logger.error("Authorization failed: \(error?.localizedDescription ?? "Unknown error")")
                     errorMessage = ExportError.healthKitAuthorizationFailed(underlying: error).localizedDescription
                     showErrorAlert = true
@@ -320,6 +345,7 @@ struct DataSelectionView: View {
                     stepsSamples = nil
                     glucoseSamples = nil
                     a1cSamples = nil
+                    isPreparingExport = false
                     errorMessage = ExportError.noDataFound.localizedDescription
                     showErrorAlert = true
                     return
@@ -347,6 +373,7 @@ struct DataSelectionView: View {
                 pendingExportEstimate = estimate
 
                 if estimate.shouldShowConfirmation {
+                    isPreparingExport = false
                     showingEstimateConfirmation = true
                 } else {
                     continuePendingExport()
@@ -358,6 +385,7 @@ struct DataSelectionView: View {
     private func continuePendingExport() {
         guard var payload = pendingExportPayload else { return }
 
+        isPreparingExport = true
         clearPendingExport()
 
         let dateFormat = settings.dateFormat
@@ -392,6 +420,7 @@ struct DataSelectionView: View {
         let dateString = dateFormatter.string(from: Date())
         fileName = "HealthExporter_\(dateString).csv"
 
+        isPreparingExport = false
         showingExporter = true
     }
 
