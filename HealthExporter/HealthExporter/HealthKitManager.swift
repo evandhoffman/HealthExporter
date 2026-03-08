@@ -1,6 +1,51 @@
 import HealthKit
 import os
 
+/// Pure helpers extracted from HealthKitManager for testability.
+enum HealthKitQueryHelpers {
+
+    /// The set of HealthKit types to request read access for.
+    static func readTypes(includeA1C: Bool) -> Set<HKObjectType> {
+        let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+        let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
+        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
+
+        var types: Set<HKObjectType> = [weightType, stepsType, glucoseType]
+
+        if includeA1C,
+           let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
+            types.insert(clinicalType)
+        }
+
+        return types
+    }
+
+    /// Builds an inclusive start-of-day to end-of-day+1 date range, suitable for
+    /// `HKQuery.predicateForSamples`. Returns nil if the calendar math fails.
+    static func dayAlignedRange(
+        from dateRange: (startDate: Date, endDate: Date),
+        calendar: Calendar = .current
+    ) -> (start: Date, end: Date)? {
+        let startOfDay = calendar.startOfDay(for: dateRange.startDate)
+        guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else {
+            return nil
+        }
+        return (startOfDay, endOfDay)
+    }
+
+    /// Filters A1C samples by date range (start-of-day inclusive, end-of-day+1 exclusive).
+    static func filterA1CSamplesByDateRange(
+        _ samples: [A1CSample],
+        dateRange: (startDate: Date, endDate: Date),
+        calendar: Calendar = .current
+    ) -> [A1CSample] {
+        guard let aligned = dayAlignedRange(from: dateRange, calendar: calendar) else {
+            return []
+        }
+        return samples.filter { $0.effectiveDateTime >= aligned.start && $0.effectiveDateTime < aligned.end }
+    }
+}
+
 class HealthKitManager {
     let healthStore = HKHealthStore()
     private static let logger = Logger(subsystem: "com.HealthExporter", category: "HealthKit")
@@ -11,17 +56,7 @@ class HealthKitManager {
             return
         }
 
-        let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
-        let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
-
-        var typesToRead: Set<HKObjectType> = [weightType, stepsType, glucoseType]
-
-        // Only request Clinical Records access when A1C is actually selected
-        if includeA1C,
-           let clinicalType = HKObjectType.clinicalType(forIdentifier: .labResultRecord) {
-            typesToRead.insert(clinicalType)
-        }
+        let typesToRead = HealthKitQueryHelpers.readTypes(includeA1C: includeA1C)
 
         healthStore.requestAuthorization(toShare: Set(), read: typesToRead) { success, error in
             completion(success, error)
@@ -30,16 +65,14 @@ class HealthKitManager {
     
     func fetchWeightData(dateRange: (startDate: Date, endDate: Date)? = nil, limit: Int = HKObjectQueryNoLimit, completion: @escaping ([HKQuantitySample]?, Error?) -> Void) {
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
-        
+
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            let calendar = Calendar.current
-            let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-            guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else {
+            guard let aligned = HealthKitQueryHelpers.dayAlignedRange(from: dateRange) else {
                 completion(nil, nil)
                 return
             }
-            predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+            predicate = HKQuery.predicateForSamples(withStart: aligned.start, end: aligned.end, options: .strictStartDate)
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
@@ -54,13 +87,11 @@ class HealthKitManager {
 
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            let calendar = Calendar.current
-            let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-            guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else {
+            guard let aligned = HealthKitQueryHelpers.dayAlignedRange(from: dateRange) else {
                 completion(nil, nil)
                 return
             }
-            predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+            predicate = HKQuery.predicateForSamples(withStart: aligned.start, end: aligned.end, options: .strictStartDate)
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
@@ -75,13 +106,11 @@ class HealthKitManager {
 
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            let calendar = Calendar.current
-            let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-            guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else {
+            guard let aligned = HealthKitQueryHelpers.dayAlignedRange(from: dateRange) else {
                 completion(nil, nil)
                 return
             }
-            predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+            predicate = HKQuery.predicateForSamples(withStart: aligned.start, end: aligned.end, options: .strictStartDate)
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
@@ -114,22 +143,12 @@ class HealthKitManager {
                 return
             }
             
-            let a1cSamples = (records as? [HKClinicalRecord])?.compactMap { record -> A1CSample? in
-                let sample = A1CSample(from: record)
-                
-                // Apply date range filtering if provided
-                if let dateRange = dateRange, let sample = sample {
-                    let calendar = Calendar.current
-                    let startOfDay = calendar.startOfDay(for: dateRange.startDate)
-                    guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: dateRange.endDate)) else { return nil }
-                    if sample.effectiveDateTime >= startOfDay && sample.effectiveDateTime < endOfDay {
-                        return sample
-                    }
-                    return nil
-                }
-                
-                return sample
-            } ?? []
+            var a1cSamples = (records as? [HKClinicalRecord])?.compactMap { A1CSample(from: $0) } ?? []
+
+            // Apply date range filtering if provided
+            if let dateRange = dateRange {
+                a1cSamples = HealthKitQueryHelpers.filterA1CSamplesByDateRange(a1cSamples, dateRange: dateRange)
+            }
             
             completion(a1cSamples, nil)
         }
