@@ -12,7 +12,7 @@ Tests live in `HealthExporterTests/` (sibling to the main `HealthExporter/` sour
 |------|--------------|
 | `CSVGeneratorTests.swift` | CSV generation for weight, steps, glucose, A1C; unit conversion (kg→lbs); output formatting |
 | `DateRangeOptionTests.swift` | `DateRangeOption` enum cases, raw values, `displayName` |
-| `HealthMetricConfigTests.swift` | `HealthMetricConfig.isAvailable`, `HealthMetrics` static properties, `LOINCCode` constants |
+| `HealthMetricConfigTests.swift` | `HealthMetrics` static properties and `LOINCCode` constants |
 | `GlucoseSampleTests.swift` | `GlucoseSampleMgDl` init — values ≥20 accepted, values <20 rejected |
 ## Running Tests Locally
 

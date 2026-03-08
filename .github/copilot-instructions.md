@@ -24,11 +24,10 @@ HealthExporter/
 │       ├── SettingsView.swift        # Settings: export format, units, test data
 │       ├── SettingsManager.swift     # Settings persistence with UserDefaults
 │       ├── HealthKitManager.swift    # HealthKit authorization & queries
-│       ├── HealthMetricConfig.swift  # Metric configuration with availability rules
+│       ├── HealthMetricConfig.swift  # Central metric registry
 │       ├── HealthSampleTypes.swift   # Glucose, A1C, FHIR parsing
 │       ├── CSVGenerator.swift        # CSV generation with unit conversion, date format, sort order
 │       ├── CSVDocument.swift         # FileDocument for SwiftUI fileExporter
-│       ├── BuildConfig.swift         # Feature flags (paid account gating)
 │       ├── DateRangeOption.swift     # Date range selection enum
 │       ├── ExportError.swift         # Localized error types
 │       ├── PrivacyPolicyView.swift   # Privacy policy & disclaimer view
@@ -47,7 +46,7 @@ HealthExporter/
 ### Managers
 - **HealthKitManager**: Handles HealthKit authorization and data fetching with optional date range filtering
 - **SettingsManager**: ObservableObject that persists unit preferences, date format, and sort order via UserDefaults
-- **HealthMetricConfig**: Defines metric metadata including `requiresPaidAccount` flag and availability checks
+- **HealthMetricConfig**: Defines the supported export metrics
 
 ### Utilities
 - **CSVGenerator**: Converts HKQuantitySample arrays to CSV strings with unit conversion
@@ -65,21 +64,19 @@ HealthExporter/
 ## Required Capabilities
 
 - **HealthKit**: Must be enabled in Signing & Capabilities
-- **Clinical Health Records** (A1C): Enable capability if `BuildConfig.hasPaidDeveloperAccount == true`
+- **Clinical Health Records** (A1C): Enable capability for A1C export
 - **Info.plist Keys** (set via Build Settings as INFOPLIST_KEY_*):
     - `NSHealthShareUsageDescription`
     - `NSHealthClinicalHealthRecordsShareUsageDescription` (required for A1C export)
 
 ## Supported Health Metrics
 
-| Metric | HealthKit Identifier | Units | Requires Paid Account |
-|--------|---------------------|-------|----------------------|
-| Weight | `.bodyMass` | kg, lbs | No |
-| Steps | `.stepCount` | count | No |
-| Blood Glucose | `.bloodGlucose` | mg/dL | No |
-| Hemoglobin A1C | `.labResultRecord` (Clinical) | % | Yes (paid account required) |
-
-**Important**: Metric availability is centrally managed in `HealthMetricConfig.swift`. Each metric has a `requiresPaidAccount` boolean that determines if it's available based on `BuildConfig.hasPaidDeveloperAccount`.
+| Metric | HealthKit Identifier | Units |
+|--------|---------------------|-------|
+| Weight | `.bodyMass` | kg, lbs |
+| Steps | `.stepCount` | count |
+| Blood Glucose | `.bloodGlucose` | mg/dL |
+| Hemoglobin A1C | `.labResultRecord` (Clinical) | % |
 
 ## CSV Output Format
 
@@ -115,35 +112,18 @@ Filename format: `HealthExporter_YYYY-MM-DD_HHMMSS.csv`
 
 ### Testing Status
 
-- Hemoglobin A1C export has been verified working end-to-end on a physical device with Clinical Health Records enabled. The feature is gated behind `BuildConfig.hasPaidDeveloperAccount`.
+- Hemoglobin A1C export has been verified working end-to-end on a physical device with Clinical Health Records enabled.
 
-### Metric Availability Pattern
+### Metric Pattern
 
-**CRITICAL**: When adding metrics that require paid features:
+**CRITICAL**: When adding metrics:
 
-1. Define the metric in `HealthMetricConfig.swift` with `requiresPaidAccount: true/false`
-2. Use `HealthMetrics.{metric}.isAvailable` to check availability everywhere
-3. In `DataSelectionView`, use a custom `Binding` that:
-   - Returns `false` when metric is unavailable (even if stored setting is `true`)
-   - Only allows setting to `true` if metric is available
-   - Forces value to `false` if unavailable
-4. In `SettingsManager.init()`, force unavailable metrics to `false` and clear from UserDefaults
-5. In `hasSelectedMetric`, only count metrics where `isAvailable && setting == true`
-6. This prevents UI/state mismatches where disabled metrics appear selected
-
-**Example** (A1C toggle in DataSelectionView):
-```swift
-Toggle("", isOn: Binding(
-    get: { HealthMetrics.a1c.isAvailable && settings.exportA1C },
-    set: { newValue in
-        if HealthMetrics.a1c.isAvailable {
-            settings.exportA1C = newValue
-        } else {
-            settings.exportA1C = false
-        }
-    }
-))
-```
+1. Define the metric in `HealthMetricConfig.swift`
+2. Add authorization and fetching support in `HealthKitManager`
+3. Add a normal toggle in `DataSelectionView`
+4. Persist the setting in `SettingsManager`
+5. Update `hasSelectedMetric` and CSV generation
+6. Add tests and documentation
 
 ## Memory Optimization Directive
 
@@ -172,15 +152,14 @@ Toggle("", isOn: Binding(
 ## Future Expansion
 
 When adding new health data types:
-1. Add the metric to `HealthMetricConfig.swift` with appropriate `requiresPaidAccount` value
+1. Add the metric to `HealthMetricConfig.swift`
 2. Add new quantity type identifiers in `HealthKitManager.requestAuthorization()` (only if available)
 3. Create new fetch methods in `HealthKitManager` for each data type
-4. Add corresponding toggle in `DataSelectionView` using the metric availability pattern (see Development Notes)
+4. Add corresponding toggle in `DataSelectionView` (see Development Notes)
 5. Extend `CSVGenerator.generateCombinedCSV()` with the new data type
 6. Add unit conversion logic if applicable
-7. Update SettingsManager initialization to handle unavailable metrics (force to false)
-8. Update SettingsManager/SettingsView if new unit preferences are needed
-9. **Ensure new data types follow memory optimization practices** - release samples after CSV generation
+7. Update SettingsManager/SettingsView if new preferences are needed
+8. **Ensure new data types follow memory optimization practices** - release samples after CSV generation
 
 ## Code Style
 
