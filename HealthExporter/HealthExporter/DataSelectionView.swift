@@ -20,8 +20,8 @@ struct DataSelectionView: View {
     @ObservedObject var settings: SettingsManager
     let healthManager = HealthKitManager()
 
-    private static let dayOptions = [1, 7, 14, 30, 60, 90, 180, 365]
-    private static let recordOptions = [10, 25, 50, 100, 200, 500, 1000]
+    private static let dayOptions = Array(1...30) + [60, 90, 180, 365, 730]
+    private static let recordOptions = Array(stride(from: 100, through: 10_000, by: 100))
 
     private var isValidDateRange: Bool {
         startDate <= endDate
