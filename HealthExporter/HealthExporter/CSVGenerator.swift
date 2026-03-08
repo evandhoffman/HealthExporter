@@ -1,6 +1,9 @@
 import HealthKit
 
 struct ExportPreviewEstimate {
+    static let confirmationRowThreshold = 500
+    static let confirmationByteThreshold = 1_000_000
+
     let rowCount: Int
     let estimatedByteCount: Int
 
@@ -18,6 +21,10 @@ struct ExportPreviewEstimate {
 
     var summaryText: String {
         "This will export around \(formattedRowCount) rows (\(formattedByteCount))."
+    }
+
+    var shouldShowConfirmation: Bool {
+        rowCount > Self.confirmationRowThreshold || estimatedByteCount > Self.confirmationByteThreshold
     }
 
     static func roundedRowCount(for count: Int) -> Int {

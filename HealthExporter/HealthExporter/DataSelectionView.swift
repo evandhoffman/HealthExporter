@@ -357,7 +357,12 @@ struct DataSelectionView: View {
                 clearPendingExport()
                 pendingExportPayload = payload
                 pendingExportEstimate = estimate
-                showingEstimateConfirmation = true
+
+                if estimate.shouldShowConfirmation {
+                    showingEstimateConfirmation = true
+                } else {
+                    continuePendingExport()
+                }
             }
         }
     }

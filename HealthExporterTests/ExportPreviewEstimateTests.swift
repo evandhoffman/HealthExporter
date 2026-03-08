@@ -35,6 +35,24 @@ final class ExportPreviewEstimateTests: XCTestCase {
         XCTAssertTrue(estimate.summaryText.contains("around 19,000 rows"))
     }
 
+    func testShouldShowConfirmation_falseWhenRowsAndBytesAreUnderThreshold() {
+        let estimate = ExportPreviewEstimate(rowCount: 500, estimatedByteCount: 1_000_000)
+
+        XCTAssertFalse(estimate.shouldShowConfirmation)
+    }
+
+    func testShouldShowConfirmation_trueWhenRowCountExceedsThreshold() {
+        let estimate = ExportPreviewEstimate(rowCount: 501, estimatedByteCount: 5_000)
+
+        XCTAssertTrue(estimate.shouldShowConfirmation)
+    }
+
+    func testShouldShowConfirmation_trueWhenByteCountExceedsThreshold() {
+        let estimate = ExportPreviewEstimate(rowCount: 10, estimatedByteCount: 1_000_001)
+
+        XCTAssertTrue(estimate.shouldShowConfirmation)
+    }
+
     func testMakePreviewEstimate_matchesGeneratedCSVByteCount() {
         let weightSample = HKQuantitySample(
             type: weightType,
