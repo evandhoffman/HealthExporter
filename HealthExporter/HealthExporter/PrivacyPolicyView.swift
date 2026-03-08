@@ -14,11 +14,11 @@ struct PrivacyPolicyView: View {
                         .foregroundColor(.secondary)
 
                     sectionView(title: "Overview",
-                        body: "HealthExporter is designed with your privacy as a core principle. All data processing happens entirely on your device. No health data is ever sent to external servers, collected by the developer, or shared with third parties.")
+                        body: "HealthExporterCSV is designed with your privacy as a core principle. All data processing happens entirely on your device. No health data is ever sent to external servers, collected by the developer, or shared with third parties.")
 
                     sectionView(title: "Data We Access",
                         body: """
-                        HealthExporter requests read-only access to the following Apple HealthKit data types, only when you explicitly grant permission:
+                        HealthExporterCSV requests read-only access to the following Apple HealthKit data types, only when you explicitly grant permission:
 
                         • Weight
                         • Step Count
@@ -41,11 +41,11 @@ struct PrivacyPolicyView: View {
 
                 Group {
                     sectionView(title: "Data Storage",
-                        body: "The only data HealthExporter stores persistently is your preferences (unit selections, date format, sort order, and metric toggle states) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.")
+                        body: "The only data HealthExporterCSV stores persistently is your preferences (unit selections, date format, sort order, and metric toggle states) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.")
 
                     sectionView(title: "No Data Collection or Transmission",
                         body: """
-                        HealthExporter does not:
+                        HealthExporterCSV does not:
 
                         • Collect or transmit any data to external servers
                         • Include analytics, crash reporting, or tracking SDKs
@@ -55,7 +55,7 @@ struct PrivacyPolicyView: View {
                         """)
 
                     sectionView(title: "Your Control",
-                        body: "You can revoke HealthExporter's access to HealthKit data at any time through Settings > Health > Data Access & Devices on your iPhone. Revoking access does not affect any CSV files you have previously exported.")
+                        body: "You can revoke HealthExporterCSV's access to HealthKit data at any time through Settings > Health > Data Access & Devices on your iPhone. Revoking access does not affect any CSV files you have previously exported.")
 
                     sectionView(title: "Changes to This Policy",
                         body: "If this privacy policy is updated, the revised version will be included in an app update. The \"Last updated\" date at the top will reflect the most recent revision.")
@@ -70,16 +70,16 @@ struct PrivacyPolicyView: View {
                         .fontWeight(.bold)
 
                     sectionView(title: "No Warranty",
-                        body: "HealthExporter is provided \"as is\" without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement.")
+                        body: "HealthExporterCSV is provided \"as is\" without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement.")
 
                     sectionView(title: "Not Medical Advice",
-                        body: "HealthExporter is a data export utility. It does not provide medical advice, diagnosis, or treatment recommendations. The exported data is a reflection of what is stored in Apple HealthKit and should not be used as a substitute for professional medical judgment. Always consult a qualified healthcare provider with questions about your health.")
+                        body: "HealthExporterCSV is a data export utility. It does not provide medical advice, diagnosis, or treatment recommendations. The exported data is a reflection of what is stored in Apple HealthKit and should not be used as a substitute for professional medical judgment. Always consult a qualified healthcare provider with questions about your health.")
 
                     sectionView(title: "Limitation of Liability",
                         body: "In no event shall the developer be liable for any claim, damages, or other liability arising from the use or inability to use this app, including but not limited to data loss, inaccurate exports, or any decisions made based on exported data.")
 
                     sectionView(title: "Data Accuracy",
-                        body: "HealthExporter exports data as recorded in Apple HealthKit. The developer makes no guarantees about the accuracy, completeness, or reliability of the underlying health data or the exported CSV files.")
+                        body: "HealthExporterCSV exports data as recorded in Apple HealthKit. The developer makes no guarantees about the accuracy, completeness, or reliability of the underlying health data or the exported CSV files.")
                 }
             }
             .padding()

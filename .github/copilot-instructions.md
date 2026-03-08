@@ -40,7 +40,7 @@ HealthExporter/
 
 ### Views
 - **LaunchView**: Welcome/splash screen with "Next" button and gear icon for Settings
-- **DataSelectionView**: Main screen with metric toggles (Weight, Steps, Blood Glucose, A1C), date pickers, and Save/Share buttons
+- **DataSelectionView**: Main screen with metric toggles (Weight, Steps, Blood Glucose, A1C), date pickers, and Save button
 - **SettingsView**: Export format (date format, sort order) and unit preference configuration (Temperature, Weight, Distance/Speed)
 
 ### Managers

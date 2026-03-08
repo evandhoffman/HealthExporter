@@ -152,11 +152,11 @@ HealthExporter/
 
 ### Overview
 
-HealthExporter is designed with your privacy as a core principle. All data processing happens entirely on your device. No health data is ever sent to external servers, collected by the developer, or shared with third parties.
+HealthExporterCSV is designed with your privacy as a core principle. All data processing happens entirely on your device. No health data is ever sent to external servers, collected by the developer, or shared with third parties.
 
 ### Data We Access
 
-HealthExporter requests read-only access to the following Apple HealthKit data types, only when you explicitly grant permission:
+HealthExporterCSV requests read-only access to the following Apple HealthKit data types, only when you explicitly grant permission:
 
 - Weight
 - Step Count
@@ -176,11 +176,11 @@ Your health data is used solely to generate CSV export files on your device. Spe
 
 ### Data Storage
 
-The only data HealthExporter stores persistently is your preferences (unit selections, date format, sort order, and metric toggle states) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.
+The only data HealthExporterCSV stores persistently is your preferences (unit selections, date format, sort order, and metric toggle states) in the app's local UserDefaults. No health data, personal identifiers, or usage analytics are stored.
 
 ### No Data Collection or Transmission
 
-HealthExporter does not:
+HealthExporterCSV does not:
 
 - Collect or transmit any data to external servers
 - Include analytics, crash reporting, or tracking SDKs
@@ -190,7 +190,7 @@ HealthExporter does not:
 
 ### Your Control
 
-You can revoke HealthExporter's access to HealthKit data at any time through **Settings > Health > Data Access & Devices** on your iPhone. Revoking access does not affect any CSV files you have previously exported.
+You can revoke HealthExporterCSV's access to HealthKit data at any time through **Settings > Health > Data Access & Devices** on your iPhone. Revoking access does not affect any CSV files you have previously exported.
 
 ### Changes to This Policy
 
@@ -200,11 +200,11 @@ If this privacy policy is updated, the revised version will be included in an ap
 
 ### No Warranty
 
-HealthExporter is provided "as is" without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement.
+HealthExporterCSV is provided "as is" without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement.
 
 ### Not Medical Advice
 
-HealthExporter is a data export utility. It does not provide medical advice, diagnosis, or treatment recommendations. The exported data is a reflection of what is stored in Apple HealthKit and should not be used as a substitute for professional medical judgment. Always consult a qualified healthcare provider with questions about your health.
+HealthExporterCSV is a data export utility. It does not provide medical advice, diagnosis, or treatment recommendations. The exported data is a reflection of what is stored in Apple HealthKit and should not be used as a substitute for professional medical judgment. Always consult a qualified healthcare provider with questions about your health.
 
 ### Limitation of Liability
 
@@ -212,4 +212,4 @@ In no event shall the developer be liable for any claim, damages, or other liabi
 
 ### Data Accuracy
 
-HealthExporter exports data as recorded in Apple HealthKit. The developer makes no guarantees about the accuracy, completeness, or reliability of the underlying health data or the exported CSV files.
+HealthExporterCSV exports data as recorded in Apple HealthKit. The developer makes no guarantees about the accuracy, completeness, or reliability of the underlying health data or the exported CSV files.

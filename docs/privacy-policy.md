@@ -28,7 +28,7 @@ You control exactly which data types to share through the Apple Health permissio
 Your health data is used solely to generate CSV export files on your device. Specifically:
 
 - Data is read from HealthKit only when you initiate an export.
-- The CSV file is generated in memory and presented via the system file picker.
+- The CSV file is generated in memory and presented through the system file picker.
 - Health data is cleared from app memory immediately after export.
 - No health data is stored persistently by the app.
 
