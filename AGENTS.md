@@ -90,6 +90,7 @@ Do not commit real secrets; use `Secrets.plist.example` as the template. Keep He
 Required capabilities and configuration:
 - HealthKit is always required.
 - Clinical Health Records is required for A1C export.
-- Usage descriptions are set via build settings: `NSHealthShareUsageDescription` and `NSHealthClinicalHealthRecordsShareUsageDescription`.
+- Usage descriptions are set via build settings: `NSHealthShareUsageDescription`, `NSHealthClinicalHealthRecordsShareUsageDescription`, and `NSHealthUpdateUsageDescription`.
+- Keep `NSHealthUpdateUsageDescription` in the app target even though the production export flow is read-only. `HealthKitManager.generateTestData()` calls `healthStore.save(...)` inside simulator-only code, and App Store validation still expects the write-purpose string to exist when that API is referenced.
 
 HealthKit requires a physical device for full verification. The simulator has limited support; use the simulator-only test data generator for UI development when needed.
