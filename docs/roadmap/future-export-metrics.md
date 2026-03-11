@@ -6,10 +6,10 @@ This document captures candidate Apple Health export metrics for future enhancem
 
 The current app exports:
 
-- Weight
-- Steps
-- Blood Glucose
-- Hemoglobin A1C
+- Weight (`HKQuantityTypeIdentifierBodyMass`)
+- Steps (`HKQuantityTypeIdentifierStepCount`)
+- Blood Glucose (`HKQuantityTypeIdentifierBloodGlucose`)
+- Hemoglobin A1C (`HKClinicalTypeIdentifierLabResultRecord`, filtered to LOINC `4548-4`)
 
 The list below is based on a review of a full Apple Health export dump from a real iPhone backup (`~/Dropbox/apple_health_export`). The goal is to prioritize exports that are both useful to users and compatible with the app's CSV-first workflow.
 
@@ -48,14 +48,14 @@ The dump also contains:
 
 Strong near-term candidates with broad user appeal:
 
-- Heart Rate
-- Resting Heart Rate
-- Walking Heart Rate Average
-- Heart Rate Variability (SDNN)
-- Respiratory Rate
-- Oxygen Saturation
-- VO2 Max
-- Heart Rate Recovery
+- Heart Rate (`HKQuantityTypeIdentifierHeartRate`)
+- Resting Heart Rate (`HKQuantityTypeIdentifierRestingHeartRate`)
+- Walking Heart Rate Average (`HKQuantityTypeIdentifierWalkingHeartRateAverage`)
+- Heart Rate Variability (SDNN) (`HKQuantityTypeIdentifierHeartRateVariabilitySDNN`)
+- Respiratory Rate (`HKQuantityTypeIdentifierRespiratoryRate`)
+- Oxygen Saturation (`HKQuantityTypeIdentifierOxygenSaturation`)
+- VO2 Max (`HKQuantityTypeIdentifierVO2Max`)
+- Heart Rate Recovery (`HKQuantityTypeIdentifierHeartRateRecoveryOneMinute`)
 
 Why this theme matters:
 
@@ -65,9 +65,9 @@ Why this theme matters:
 
 ### Sleep and overnight health
 
-- Sleep Analysis
-- Respiratory Rate during sleep
-- Oxygen Saturation during sleep
+- Sleep Analysis (`HKCategoryTypeIdentifierSleepAnalysis`)
+- Respiratory Rate during sleep (`HKQuantityTypeIdentifierRespiratoryRate`)
+- Oxygen Saturation during sleep (`HKQuantityTypeIdentifierOxygenSaturation`)
 
 Why:
 
@@ -77,14 +77,14 @@ Why:
 
 ### Activity rings and movement
 
-- Active Energy Burned
-- Basal Energy Burned
-- Apple Exercise Time
-- Apple Stand Time
-- Apple Stand Hour
-- Distance Walking/Running
-- Flights Climbed
-- Time in Daylight
+- Active Energy Burned (`HKQuantityTypeIdentifierActiveEnergyBurned`)
+- Basal Energy Burned (`HKQuantityTypeIdentifierBasalEnergyBurned`)
+- Apple Exercise Time (`HKQuantityTypeIdentifierAppleExerciseTime`)
+- Apple Stand Time (`HKQuantityTypeIdentifierAppleStandTime`)
+- Apple Stand Hour (`HKCategoryTypeIdentifierAppleStandHour`)
+- Distance Walking/Running (`HKQuantityTypeIdentifierDistanceWalkingRunning`)
+- Flights Climbed (`HKQuantityTypeIdentifierFlightsClimbed`)
+- Time in Daylight (`HKQuantityTypeIdentifierTimeInDaylight`)
 
 Why:
 
@@ -94,9 +94,9 @@ Why:
 
 ### Body composition
 
-- Body Mass Index
-- Body Fat Percentage
-- Lean Body Mass
+- Body Mass Index (`HKQuantityTypeIdentifierBodyMassIndex`)
+- Body Fat Percentage (`HKQuantityTypeIdentifierBodyFatPercentage`)
+- Lean Body Mass (`HKQuantityTypeIdentifierLeanBodyMass`)
 
 Why:
 
@@ -106,14 +106,14 @@ Why:
 
 ### Mobility and gait
 
-- Walking Speed
-- Walking Step Length
-- Walking Asymmetry Percentage
-- Walking Double Support Percentage
-- Apple Walking Steadiness
-- Six-Minute Walk Test Distance
-- Stair Ascent Speed
-- Stair Descent Speed
+- Walking Speed (`HKQuantityTypeIdentifierWalkingSpeed`)
+- Walking Step Length (`HKQuantityTypeIdentifierWalkingStepLength`)
+- Walking Asymmetry Percentage (`HKQuantityTypeIdentifierWalkingAsymmetryPercentage`)
+- Walking Double Support Percentage (`HKQuantityTypeIdentifierWalkingDoubleSupportPercentage`)
+- Apple Walking Steadiness (`HKQuantityTypeIdentifierAppleWalkingSteadiness`)
+- Six-Minute Walk Test Distance (`HKQuantityTypeIdentifierSixMinuteWalkTestDistance`)
+- Stair Ascent Speed (`HKQuantityTypeIdentifierStairAscentSpeed`)
+- Stair Descent Speed (`HKQuantityTypeIdentifierStairDescentSpeed`)
 
 Why:
 
@@ -125,7 +125,7 @@ Why:
 
 Rather than only exporting raw samples, support workout-level exports such as:
 
-- Workout type
+- Workout records (`<Workout ...>`)
 - Start time
 - End time
 - Duration
@@ -147,12 +147,12 @@ Why:
 
 ### Cycling and training performance
 
-- Cycling Speed
-- Cycling Cadence
-- Cycling Power
-- Cycling Functional Threshold Power
-- Distance Cycling
-- Physical Effort
+- Cycling Speed (`HKQuantityTypeIdentifierCyclingSpeed`)
+- Cycling Cadence (`HKQuantityTypeIdentifierCyclingCadence`)
+- Cycling Power (`HKQuantityTypeIdentifierCyclingPower`)
+- Cycling Functional Threshold Power (`HKQuantityTypeIdentifierCyclingFunctionalThresholdPower`)
+- Distance Cycling (`HKQuantityTypeIdentifierDistanceCycling`)
+- Physical Effort (`HKQuantityTypeIdentifierPhysicalEffort`)
 
 Why:
 
@@ -162,10 +162,10 @@ Why:
 
 ### Hearing and environmental exposure
 
-- Headphone Audio Exposure
-- Environmental Audio Exposure
-- Audio Exposure Events
-- Environmental Sound Reduction
+- Headphone Audio Exposure (`HKQuantityTypeIdentifierHeadphoneAudioExposure`)
+- Environmental Audio Exposure (`HKQuantityTypeIdentifierEnvironmentalAudioExposure`)
+- Audio Exposure Events (`HKCategoryTypeIdentifierAudioExposureEvent`)
+- Environmental Sound Reduction (`HKQuantityTypeIdentifierEnvironmentalSoundReduction`)
 
 Why:
 
@@ -177,15 +177,15 @@ Why:
 
 Potentially useful, but likely not first-wave:
 
-- Dietary Energy Consumed
-- Carbohydrates
-- Protein
-- Total Fat
-- Fiber
-- Sugar
-- Sodium
-- Potassium
-- Cholesterol
+- Dietary Energy Consumed (`HKQuantityTypeIdentifierDietaryEnergyConsumed`)
+- Carbohydrates (`HKQuantityTypeIdentifierDietaryCarbohydrates`)
+- Protein (`HKQuantityTypeIdentifierDietaryProtein`)
+- Total Fat (`HKQuantityTypeIdentifierDietaryFatTotal`)
+- Fiber (`HKQuantityTypeIdentifierDietaryFiber`)
+- Sugar (`HKQuantityTypeIdentifierDietarySugar`)
+- Sodium (`HKQuantityTypeIdentifierDietarySodium`)
+- Potassium (`HKQuantityTypeIdentifierDietaryPotassium`)
+- Cholesterol (`HKQuantityTypeIdentifierDietaryCholesterol`)
 
 Why later:
 
@@ -197,12 +197,12 @@ Why later:
 
 Beyond A1C, the sampled export includes:
 
-- Diagnostic reports
-- Conditions
-- Allergies
-- Document references
-- ECG files
-- Workout route files
+- Diagnostic reports (`<ClinicalRecord type="DiagnosticReport" ...>`)
+- Conditions (`<ClinicalRecord type="Condition" ...>`)
+- Allergies (`<ClinicalRecord type="AllergyIntolerance" ...>`)
+- Document references (`<ClinicalRecord type="DocumentReference" ...>`)
+- ECG files (`electrocardiograms/ecg_*.csv`)
+- Workout route files (`workout-routes/route_*.gpx`)
 
 Potential future directions:
 
