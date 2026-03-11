@@ -9,7 +9,7 @@ The core tension is straightforward:
 - The current product is simple, privacy-friendly, and flexible because it exports raw data and lets users analyze it anywhere.
 - That same model creates friction for common questions like "What is my 2-year weight trend?" or "How has my resting heart rate changed month over month?"
 
-The goal is not to turn the app into a full analytics platform. The goal is to decide whether a small amount of in-app analysis would remove high-friction steps while preserving the product's CSV-first identity.
+The goal is not to turn the app into a full analytics platform or dashboard. The goal is to decide whether a small amount of in-app analysis would remove high-friction steps while preserving the product's CSV-first identity.
 
 ## Current product strength
 
@@ -22,6 +22,25 @@ The current approach has real advantages:
 - Lower risk of building shallow charts that do less than spreadsheet tools
 
 This is a meaningful differentiator. Many apps either lock users into their own dashboard or make exporting difficult. HealthExporter currently does the opposite.
+
+## Intended chart scope
+
+If this feature is pursued, charting should stay deliberately simple.
+
+Allowed chart types:
+
+- line charts
+- bar charts
+- pie charts
+
+Not in scope:
+
+- dashboards
+- multi-panel analytics screens
+- highly interactive exploration tools
+- complex custom visualizations
+
+The product shape should be closer to "visualize this exportable dataset and optionally share the result" than "build an in-app analytics product."
 
 ## Current product friction
 
@@ -47,6 +66,7 @@ If this feature is pursued, the best framing is:
 
 - HealthExporter remains export-first
 - In-app charts are a convenience layer for common questions
+- In-app charts are simple visuals, not dashboards
 - Raw export remains the source of truth and the primary interoperability feature
 
 This avoids drifting into a general-purpose health dashboard app.
@@ -60,6 +80,7 @@ Charts and summaries should complement export, not replace it.
 Good product language:
 
 - "Preview trends before export"
+- "Generate a simple chart you can share"
 - "See a quick summary in the app, export raw data for deeper analysis"
 
 Bad product language:
@@ -121,8 +142,9 @@ Add a simple detail view for each supported metric with:
 
 - time range selector
 - aggregation selector
-- line chart or bar chart depending on metric
+- simple line chart, bar chart, or pie chart depending on metric
 - headline summary values
+- export/share chart image action
 
 Examples:
 
@@ -130,6 +152,7 @@ Examples:
 - Steps: bar chart, daily or monthly total
 - Glucose: line chart, daily average or raw points
 - A1C: sparse point chart over time
+- Metric composition where appropriate: pie chart, but only when the category split is obvious and small
 
 Why this is the strongest first step:
 
@@ -198,6 +221,7 @@ This should be later because comparison UIs get complicated quickly.
 To keep this feature from sprawling, explicitly avoid the following in the first phase:
 
 - custom dashboard builders
+- dashboard home screens
 - arbitrary spreadsheet-style formulas
 - route maps
 - ECG waveform viewers
@@ -217,13 +241,14 @@ The cleanest product shape is probably:
 4. Screen shows:
    - range selector
    - aggregation selector
-   - chart
+   - one simple chart
    - summary stats
    - optional `Export Raw CSV` action
+   - optional `Share Chart as PNG` action
 
 This keeps charting subordinate to export rather than replacing the current flow.
 
-Another viable option is a dedicated `Trends` tab, but that risks shifting the product identity from exporter to dashboard.
+Another viable option is a dedicated `Trends` tab, but that risks shifting the product identity from exporter to dashboard and should be avoided unless there is a much stronger product reason later.
 
 ## Aggregation model
 
@@ -239,6 +264,18 @@ Examples:
 - Active Energy Burned (`HKQuantityTypeIdentifierActiveEnergyBurned`): total by day/week/month
 
 This should be metric-specific rather than one aggregation model applied blindly to everything.
+
+## Sharing use cases
+
+One practical reason to add charts is lightweight sharing.
+
+Examples:
+
+- export a 5-year weight trend as PNG and text it to a friend
+- share an A1C history chart with a family member
+- save a steps or resting-heart-rate chart to Photos
+
+This is a better fit for the product than trying to build a rich dashboard. The value is quick visualization and lightweight sharing of data the app already knows how to export.
 
 ## Benefits
 
@@ -304,6 +341,8 @@ The best version of this idea is not "build analytics into the app." The best ve
 
 - make common longitudinal questions easy to answer inside the app
 - keep raw CSV export central
+- keep charting limited to simple line, bar, and pie charts
+- make it easy to share a chart image such as a PNG
 - avoid becoming a generic health dashboard
 
 ## Open product question
