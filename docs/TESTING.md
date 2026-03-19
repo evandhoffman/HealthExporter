@@ -34,11 +34,12 @@ Tests live in `HealthExporterTests/` (sibling to the main `HealthExporter/` sour
 
 ### From the command line
 ```bash
-# Run tests against the latest available simulator
+# Run tests against a specific simulator UUID to avoid duplicate-name collisions.
+# Use `xcrun simctl list devices available` to find an ID on your machine.
 xcodebuild test \
   -project HealthExporter.xcodeproj \
   -scheme HealthExporter \
-  -destination 'platform=iOS Simulator,OS=latest,name=iPhone 17 Pro' \
+  -destination 'id=<SIMULATOR-UUID>' \
   CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
   | xcpretty
 ```

@@ -1,162 +1,55 @@
-# ✅ Hemoglobin A1C Implementation - Quick Reference
+# Hemoglobin A1C Quick Reference
 
 > Testing status: A1C export has been verified working end-to-end on a physical device with Clinical Health Records enabled.
 
-## What Was Added
+## What It Does
 
-### New Data Model
-- **File**: `HealthSampleTypes.swift`
-- **Struct**: `A1CSample` 
-  - Parses FHIR resources from clinical records
-  - Searches for LOINC code 4548-4
-  - Extracts: `effectiveDateTime`, `valueQuantity.value`, `valueQuantity.unit`
+- Exports Hemoglobin A1C values from Apple Health Clinical Records
+- Uses LOINC `4548-4` to identify the matching lab result records
+- Includes A1C rows in the same CSV as weight, steps, and glucose
 
-### HealthKit Integration
-- **File**: `HealthKitManager.swift`
-- **New Method**: `fetchA1CData(dateRange:completion:)`
-- **Updated**: `requestAuthorization()` to include clinical records access
-- Uses `HKSampleQuery` with `HKClinicalTypeIdentifier.labResultRecord`
+## Key Files
 
-### User Settings
-- **File**: `SettingsManager.swift`
-- **New Property**: `@Published var exportA1C: Bool`
-- Persists to UserDefaults with key: `"exportA1C"`
-- No developer-account gating; A1C is a standard supported metric
+- `HealthSampleTypes.swift` for `A1CSample` and FHIR parsing
+- `HealthKitManager.swift` for authorization and `fetchA1CData(dateRange:limit:completion:)`
+- `SettingsManager.swift` for the `exportA1C` preference
+- `DataSelectionView.swift` for the A1C toggle and export flow
+- `CSVGenerator.swift` for CSV row generation
 
-### User Interface
-- **File**: `DataSelectionView.swift`
-- Added toggle: "Hemoglobin A1C (%)"
-- Integrated into export flow with DispatchGroup
-- Updated metric selection validation
+## Required Setup
 
-### CSV Export
-- **File**: `CSVGenerator.swift`
-- **Updated**: `generateCombinedCSV()` method
-- A1C data formatted as: `Date,Hemoglobin A1C,Value,%,Source`
+Keep these generated Info.plist build settings in the Xcode project:
 
----
+- `INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription`
+- `INFOPLIST_KEY_NSHealthShareUsageDescription`
+- `INFOPLIST_KEY_NSHealthUpdateUsageDescription`
 
-## 🚨 REQUIRED SETUP BEFORE BUILDING
+Also make sure the target has HealthKit and Clinical Health Records capabilities enabled.
 
-### 1. Update Info.plist
+## Runtime Notes
 
-Add this key (adjust description as needed):
-```xml
-<key>NSHealthClinicalHealthRecordsShareUsageDescription</key>
-<string>We need access to your clinical health records to export your Hemoglobin A1C results to a CSV file.</string>
+- The app currently targets iOS 26+
+- The A1C code path itself is guarded with `#available(iOS 15.0, *)`
+- Simulator support is limited; validate on a physical device
+- The simulator-only test data generator is separate from the production export path
+
+## Export Flow
+
+1. User enables Hemoglobin A1C in the export screen
+2. App requests HealthKit read access
+3. A1C clinical records are fetched and parsed
+4. The combined CSV is generated in memory
+5. The file picker saves the export
+
+## CSV Example
+
+```csv
+Date,Metric,Value,Unit,Source
+2026-01-15 14:30:00,Hemoglobin A1C,7.50,%,Apple Health
 ```
 
-### 2. Enable Capabilities in Xcode
+## Notes
 
-1. Select **HealthExporter** target
-2. Go to **Signing & Capabilities**
-3. Click **+ Capability** 
-4. Search for and add: **Clinical Health Records**
-5. Ensure **HealthKit** capability is also present
-
-### 3. iOS Version
-
-- **Minimum**: iOS 26+
-- Earlier iOS versions: Not supported (the app targets iOS 26+ only)
-
----
-
-## 📋 Feature Summary
-
-| Aspect | Details |
-|--------|---------|
-| FHIR Type | Lab Result Record |
-| LOINC Code | 4548-4 (Hemoglobin A1C) |
-| Data Extracted | effectiveDateTime, valueQuantity.value, valueQuantity.unit |
-| JSON Parsing | JSONSerialization |
-| CSV Column | "Hemoglobin A1C" |
-| Default Value | Format: 2 decimal places (e.g., 7.50) |
-| Unit | From FHIR (typically "%") |
-| Date Range | Supported (post-query filtering) |
-| iOS Requirement | 26+ |
-
----
-
-## 🧪 Testing on Device
-
-1. **Physical iOS 26+ Device Required**
-   - Simulator does not support clinical records
-
-2. **Health App Sync**
-   - Device must have clinical records synced via Apple Health
-
-3. **Permission Prompt**
-   - User sees authorization dialog on first export attempt
-   - Message uses `NSHealthClinicalHealthRecordsShareUsageDescription`
-
-4. **CSV Example**
-   ```
-   Date,Metric,Value,Unit,Source
-   2026-01-15 14:30:00,Hemoglobin A1C,7.50,%,Apple Health
-   ```
-
----
-
-## 🔗 Integration Points
-
-### Authorization Flow
-- A1C authorization included in existing `requestAuthorization()` call
-- Checks iOS version before requesting
-
-### Data Fetching
-- Uses same DispatchGroup pattern as existing metrics
-- Concurrent with weight/steps/glucose fetches
-- Supports optional date range filtering
-
-### CSV Generation
-- Seamlessly appended to existing combined CSV format
-- Follows same formatting pattern as other metrics
-- Supports user-selectable date format and sort order
-
-### Settings Storage
-- Uses UserDefaults like other metrics
-- Toggle state persists between app sessions
-- Defaults to disabled (false)
-
----
-
-## ⚠️ Important Notes
-
-1. **LOINC Code 4548-4 Specific**
-   - This implementation specifically searches for A1C (code 4548-4)
-   - Future enhancement: support multiple LOINC codes
-
-2. **Date Range Filtering**
-   - Filtering applied post-query (clinical records don't support query-level date predicates)
-   - May improve in future iOS versions
-
-3. **Error Handling**
-   - Invalid FHIR resources are filtered out
-   - Records without code 4548-4 are ignored
-   - The app targets iOS 26+ only; earlier versions are unsupported
-
-4. **No Breaking Changes**
-   - All existing features unaffected
-   - A1C export is optional (disabled by default)
-   - Backward compatible with all iOS versions
-
----
-
-## 📝 Files Modified
-
-1. `HealthSampleTypes.swift` - New A1CSample struct
-2. `HealthKitManager.swift` - New fetchA1CData() + updated authorization
-3. `SettingsManager.swift` - New exportA1C property
-4. `DataSelectionView.swift` - New A1C toggle + export integration
-5. `CSVGenerator.swift` - Updated CSV generation with A1C support
-
----
-
-## ✨ User Experience Flow
-
-1. User toggles "Hemoglobin A1C (%)" in data selection
-2. Clicks "Save..." or "Share..." button
-3. HealthKit requests clinical records permission (first time only)
-4. App queries for lab results with LOINC code 4548-4
-5. A1C results combined with other selected metrics in CSV
-6. File saved/shared with all data in single CSV file
+- Default export state for A1C is off
+- A1C rows are formatted to 2 decimal places
+- Existing export metrics are unaffected
