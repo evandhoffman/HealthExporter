@@ -76,7 +76,7 @@ final class ExportLogicTests: XCTestCase {
             now: now, calendar: calendar
         )
         XCTAssertNotNil(result)
-        let expected = calendar.date(byAdding: .day, value: -7, to: now)!
+        let expected = calendar.date(byAdding: .day, value: -6, to: now)!
         XCTAssertEqual(result!.startDate.timeIntervalSinceReferenceDate,
                        expected.timeIntervalSinceReferenceDate, accuracy: 1)
         XCTAssertEqual(result!.endDate.timeIntervalSinceReferenceDate,
@@ -90,9 +90,48 @@ final class ExportLogicTests: XCTestCase {
             now: now, calendar: calendar
         )
         XCTAssertNotNil(result)
-        let expected = calendar.date(byAdding: .day, value: -30, to: now)!
+        let expected = calendar.date(byAdding: .day, value: -29, to: now)!
         XCTAssertEqual(result!.startDate.timeIntervalSinceReferenceDate,
                        expected.timeIntervalSinceReferenceDate, accuracy: 1)
+    }
+
+    func testFirstFetchError_returnsWeightErrorFirst() {
+        let underlying = NSError(domain: "HKErrorDomain", code: 1, userInfo: [
+            NSLocalizedDescriptionKey: "Weight failed"
+        ])
+
+        let error = ExportLogic.firstFetchError(
+            weightError: underlying,
+            stepsError: nil,
+            glucoseError: nil,
+            a1cError: nil
+        )
+
+        XCTAssertEqual(
+            error?.localizedDescription,
+            "Failed to fetch Weight data: Weight failed"
+        )
+    }
+
+    func testFirstFetchError_prefersEarlierSelectedMetric() {
+        let stepsError = NSError(domain: "HKErrorDomain", code: 2, userInfo: [
+            NSLocalizedDescriptionKey: "Steps failed"
+        ])
+        let a1cError = NSError(domain: "HKErrorDomain", code: 3, userInfo: [
+            NSLocalizedDescriptionKey: "A1C failed"
+        ])
+
+        let error = ExportLogic.firstFetchError(
+            weightError: nil,
+            stepsError: stepsError,
+            glucoseError: nil,
+            a1cError: a1cError
+        )
+
+        XCTAssertEqual(
+            error?.localizedDescription,
+            "Failed to fetch Steps data: Steps failed"
+        )
     }
 
     func testDateRange_lastXRecords_returnsNil() {

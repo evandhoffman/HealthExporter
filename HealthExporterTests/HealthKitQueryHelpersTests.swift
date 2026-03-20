@@ -119,6 +119,15 @@ final class HealthKitQueryHelpersTests: XCTestCase {
         XCTAssertEqual(startComponents.day, 1)
     }
 
+    func testPredicateForDateRange_returnsPredicate() {
+        let start = date(2024, 6, 15)
+        let end = date(2024, 6, 20)
+
+        let predicate = HealthKitQueryHelpers.predicateForDateRange((start, end), calendar: calendar)
+
+        XCTAssertNotNil(predicate)
+    }
+
     // MARK: - filterA1CSamplesByDateRange
 
     func testFilterA1C_insideRange_included() {

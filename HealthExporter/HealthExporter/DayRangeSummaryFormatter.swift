@@ -8,7 +8,8 @@ struct DayRangeSummaryFormatter {
     }()
 
     static func summaryText(forDays days: Int, relativeTo referenceDate: Date, calendar: Calendar = .current) -> String {
-        guard let startDate = calendar.date(byAdding: .day, value: -days, to: referenceDate) else {
+        let offset = max(days - 1, 0)
+        guard let startDate = calendar.date(byAdding: .day, value: -offset, to: referenceDate) else {
             return ""
         }
 
