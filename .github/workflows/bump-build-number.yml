@@ -39,3 +39,16 @@ jobs:
           git add HealthExporter.xcodeproj/project.pbxproj
           git commit -m "Bump build number to $(grep -m1 'CURRENT_PROJECT_VERSION' HealthExporter.xcodeproj/project.pbxproj | sed 's/[^0-9]//g') [skip ci]"
           git push
+
+      - name: Tag release
+        run: |
+          FILE="HealthExporter.xcodeproj/project.pbxproj"
+          TAG="v$(grep -m1 'MARKETING_VERSION' "$FILE" | sed 's/[^0-9.]//g')"
+
+          if git ls-remote --tags origin "$TAG" | grep -q "$TAG"; then
+            echo "Tag $TAG already exists"
+            exit 0
+          fi
+
+          git tag -a "$TAG" -m "$TAG"
+          git push origin "$TAG"
