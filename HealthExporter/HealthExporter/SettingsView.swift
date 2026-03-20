@@ -4,6 +4,7 @@ struct SettingsView: View {
     @ObservedObject var settings: SettingsManager
     @Environment(\.dismiss) var dismiss
     @State private var testDataMessage = ""
+    @State private var showTestDataFailureAlert = false
 
     let healthManager = HealthKitManager()
 
@@ -52,7 +53,7 @@ struct SettingsView: View {
                     #if targetEnvironment(simulator)
                     Section(header: Text("Testing")) {
                         Button(action: generateTestData) {
-                            Text("Generate Test Data")
+                            Text("Generate Weight Data")
                                 .foregroundColor(.blue)
                         }
 
@@ -87,6 +88,13 @@ struct SettingsView: View {
                     .accessibilityIdentifier("doneButton")
                 }
             }
+            #if targetEnvironment(simulator)
+            .alert("Failed to Generate Weight Data", isPresented: $showTestDataFailureAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(testDataMessage.replacingOccurrences(of: "✗ ", with: ""))
+            }
+            #endif
         }
     }
 
@@ -94,9 +102,10 @@ struct SettingsView: View {
     private func generateTestData() {
         healthManager.generateTestData { success, error in
             if success {
-                testDataMessage = "✓ Test data generated (30 days)"
+                testDataMessage = "✓ Weight data generated (60 days)"
             } else {
-                testDataMessage = "✗ Failed to generate test data"
+                testDataMessage = "✗ \(HealthKitQueryHelpers.simulatorTestDataFailureMessage(error))"
+                showTestDataFailureAlert = true
             }
         }
     }

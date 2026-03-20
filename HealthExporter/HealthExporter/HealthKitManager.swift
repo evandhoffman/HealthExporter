@@ -55,6 +55,50 @@ enum HealthKitQueryHelpers {
         }
         return samples.filter { $0.effectiveDateTime >= aligned.start && $0.effectiveDateTime < aligned.end }
     }
+
+    /// Generates a contiguous set of daily weight samples for simulator testing.
+    static func generateWeightTestSamples(
+        days: Int = 60,
+        referenceDate: Date = Date(),
+        calendar: Calendar = .current,
+        valueGenerator: (Int) -> Double = { _ in Double.random(in: 80.0...95.0) }
+    ) -> [HKQuantitySample] {
+        guard days > 0 else { return [] }
+
+        let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+        let unit = HKUnit.gramUnit(with: .kilo)
+
+        return (0..<days).compactMap { index in
+            let offset = (days - 1) - index
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: referenceDate) else {
+                return nil
+            }
+
+            let value = valueGenerator(index)
+            return HKQuantitySample(
+                type: weightType,
+                quantity: HKQuantity(unit: unit, doubleValue: value),
+                start: date,
+                end: date
+            )
+        }
+    }
+
+    #if targetEnvironment(simulator)
+    /// The sample types the simulator test-data generator needs permission to write.
+    static func simulatorTestDataShareTypes() -> Set<HKSampleType> {
+        let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+        return [weightType]
+    }
+
+    /// Formats a simulator mock-data failure for display in the Settings debug UI.
+    static func simulatorTestDataFailureMessage(_ error: Error?) -> String {
+        if let error {
+            return "Failed to generate weight data: \(error.localizedDescription)"
+        }
+        return "Failed to generate weight data."
+    }
+    #endif
 }
 
 class HealthKitManager {
@@ -168,58 +212,19 @@ class HealthKitManager {
     
     #if targetEnvironment(simulator)
     func generateTestData(completion: @escaping (Bool, Error?) -> Void) {
-        let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
-        let stepsType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
-        
-        var samples: [HKSample] = []
-        let calendar = Calendar.current
-        
-        // Generate 30 days of test data
-        for i in 0..<30 {
-            guard let date = calendar.date(byAdding: .day, value: -i, to: Date()) else { continue }
+        let samples = HealthKitQueryHelpers.generateWeightTestSamples(days: 60)
+        let shareTypes = HealthKitQueryHelpers.simulatorTestDataShareTypes()
 
-            // Weight sample (80-95 kg)
-            let weightValue = Double.random(in: 80.0...95.0)
-            let weightSample = HKQuantitySample(
-                type: weightType,
-                quantity: HKQuantity(unit: HKUnit.gramUnit(with: .kilo), doubleValue: weightValue),
-                start: date,
-                end: date
-            )
-            samples.append(weightSample)
+        healthStore.requestAuthorization(toShare: shareTypes, read: Set()) { [weak self] success, error in
+            guard let self else { return }
+            guard success else {
+                completion(false, error)
+                return
+            }
 
-            // Steps sample (3000-12000 steps)
-            let stepsValue = Double.random(in: 3000.0...12000.0)
-            let stepsSample = HKQuantitySample(
-                type: stepsType,
-                quantity: HKQuantity(unit: HKUnit.count(), doubleValue: stepsValue),
-                start: date,
-                end: date
-            )
-            samples.append(stepsSample)
-        }
-
-        // Generate glucose test data
-        for i in 0..<30 {
-            guard let date = calendar.date(byAdding: .day, value: -i, to: Date()) else { continue }
-            
-            // Blood glucose sample (70-180 mg/dL)
-            let glucoseValue = Double.random(in: 70.0...180.0)
-            let glucoseUnit = HKUnit.gramUnit(with: .milli).unitDivided(by: HKUnit.literUnit(with: .deci))
-            let metadata: [String: Any] = [HKMetadataKeyWasUserEntered: false]
-            let glucoseSample = HKQuantitySample(
-                type: glucoseType,
-                quantity: HKQuantity(unit: glucoseUnit, doubleValue: glucoseValue),
-                start: date,
-                end: date,
-                metadata: metadata
-            )
-            samples.append(glucoseSample)
-        }
-        
-        healthStore.save(samples) { success, error in
-            completion(success, error)
+            self.healthStore.save(samples) { success, error in
+                completion(success, error)
+            }
         }
     }
     #endif
