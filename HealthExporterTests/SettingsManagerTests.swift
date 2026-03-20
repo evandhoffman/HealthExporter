@@ -48,6 +48,12 @@ final class SettingsManagerTests: XCTestCase {
         XCTAssertEqual(SortOrder(rawValue: raw), .ascending)
     }
 
+    func testDefaultAutoDismissSaveConfirmation_whenKeyMissing_isTrue() {
+        let defaults = makeDefaults()
+        let value = defaults.object(forKey: "autoDismissSaveConfirmation") as? Bool ?? true
+        XCTAssertTrue(value)
+    }
+
     func testDefaultExportWeight_whenKeyMissing_isTrue() {
         let defaults = makeDefaults()
         let value = defaults.object(forKey: "exportWeight") as? Bool ?? true
@@ -103,11 +109,13 @@ final class SettingsManagerTests: XCTestCase {
 
     func testReadsPersistedBoolValues() {
         let defaults = makeDefaults()
+        defaults.set(false, forKey: "autoDismissSaveConfirmation")
         defaults.set(false, forKey: "exportWeight")
         defaults.set(false, forKey: "exportSteps")
         defaults.set(true, forKey: "exportGlucose")
         defaults.set(true, forKey: "exportA1C")
 
+        XCTAssertFalse(defaults.bool(forKey: "autoDismissSaveConfirmation"))
         XCTAssertFalse(defaults.bool(forKey: "exportWeight"))
         XCTAssertFalse(defaults.bool(forKey: "exportSteps"))
         XCTAssertTrue(defaults.bool(forKey: "exportGlucose"))

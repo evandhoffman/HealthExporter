@@ -57,6 +57,7 @@ class SettingsManager: ObservableObject {
     @Published var temperatureUnit: TemperatureUnit
     @Published var weightUnit: WeightUnit
     @Published var distanceSpeedUnit: DistanceSpeedUnit
+    @Published var autoDismissSaveConfirmation: Bool
     @Published var exportWeight: Bool
     @Published var exportSteps: Bool
     @Published var exportGlucose: Bool
@@ -83,6 +84,8 @@ class SettingsManager: ObservableObject {
 
         let sortOrderRaw = UserDefaults.standard.string(forKey: "sortOrder") ?? SortOrder.ascending.rawValue
         self.sortOrder = SortOrder(rawValue: sortOrderRaw) ?? .ascending
+
+        self.autoDismissSaveConfirmation = UserDefaults.standard.object(forKey: "autoDismissSaveConfirmation") as? Bool ?? true
 
         // Load metric preferences (default to exporting weight and steps)
         self.exportWeight = UserDefaults.standard.object(forKey: "exportWeight") as? Bool ?? true
@@ -118,6 +121,11 @@ class SettingsManager: ObservableObject {
         $sortOrder
             .dropFirst()
             .sink { UserDefaults.standard.set($0.rawValue, forKey: "sortOrder") }
+            .store(in: &cancellables)
+
+        $autoDismissSaveConfirmation
+            .dropFirst()
+            .sink { UserDefaults.standard.set($0, forKey: "autoDismissSaveConfirmation") }
             .store(in: &cancellables)
 
         $exportWeight
