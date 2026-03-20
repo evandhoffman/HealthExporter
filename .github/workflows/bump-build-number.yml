@@ -21,23 +21,36 @@ jobs:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Bump build number
+      - name: Bump build number and patch version
         run: |
           FILE="HealthExporter.xcodeproj/project.pbxproj"
-          # Read current build number (first occurrence)
+
+          # Bump CURRENT_PROJECT_VERSION (build number)
           CURRENT=$(grep -m1 'CURRENT_PROJECT_VERSION' "$FILE" | sed 's/[^0-9]//g')
           NEXT=$((CURRENT + 1))
           echo "Bumping build number: $CURRENT -> $NEXT"
           sed -i "s/CURRENT_PROJECT_VERSION = $CURRENT;/CURRENT_PROJECT_VERSION = $NEXT;/g" "$FILE"
-          # Verify all occurrences were updated
           grep 'CURRENT_PROJECT_VERSION' "$FILE"
+
+          # Bump MARKETING_VERSION patch component (e.g. 2.4.6 -> 2.4.7)
+          MARKETING=$(grep -m1 'MARKETING_VERSION' "$FILE" | sed 's/.*= //;s/;.*//')
+          MAJOR=$(echo "$MARKETING" | cut -d. -f1)
+          MINOR=$(echo "$MARKETING" | cut -d. -f2)
+          PATCH=$(echo "$MARKETING" | cut -d. -f3)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          echo "Bumping marketing version: $MARKETING -> $NEW_VERSION"
+          sed -i "s/MARKETING_VERSION = $MARKETING;/MARKETING_VERSION = $NEW_VERSION;/g" "$FILE"
+          grep 'MARKETING_VERSION' "$FILE"
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add HealthExporter.xcodeproj/project.pbxproj
-          git commit -m "Bump build number to $(grep -m1 'CURRENT_PROJECT_VERSION' HealthExporter.xcodeproj/project.pbxproj | sed 's/[^0-9]//g') [skip ci]"
+          BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION' HealthExporter.xcodeproj/project.pbxproj | sed 's/[^0-9]//g')
+          VERSION=$(grep -m1 'MARKETING_VERSION' HealthExporter.xcodeproj/project.pbxproj | sed 's/.*= //;s/;.*//')
+          git commit -m "Bump version to $VERSION (build $BUILD) [skip ci]"
           git push
 
       - name: Tag release
