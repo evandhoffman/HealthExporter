@@ -20,7 +20,6 @@ struct DataSelectionView: View {
     @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
     @State private var endDate = Date()
     @State private var showingSaveSuccess = false
-    @State private var saveSuccessRemainingSeconds = 0
     @State private var saveSuccessDismissTask: Task<Void, Never>?
     @State private var showingEstimateConfirmation = false
     @State private var isPreparingExport = false
@@ -62,7 +61,6 @@ struct DataSelectionView: View {
 
     private func presentSaveSuccessConfirmation() {
         showingSaveSuccess = true
-        saveSuccessRemainingSeconds = Self.saveSuccessAutoDismissSeconds
 
         guard settings.autoDismissSaveConfirmation else {
             cancelSaveSuccessDismissTask()
@@ -71,15 +69,10 @@ struct DataSelectionView: View {
 
         cancelSaveSuccessDismissTask()
         saveSuccessDismissTask = Task { @MainActor in
-            for remaining in stride(from: Self.saveSuccessAutoDismissSeconds, through: 1, by: -1) {
-                guard !Task.isCancelled, showingSaveSuccess else { return }
-                saveSuccessRemainingSeconds = remaining
-
-                do {
-                    try await Task.sleep(nanoseconds: 1_000_000_000)
-                } catch {
-                    return
-                }
+            do {
+                try await Task.sleep(nanoseconds: UInt64(Self.saveSuccessAutoDismissSeconds) * 1_000_000_000)
+            } catch {
+                return
             }
 
             guard !Task.isCancelled, showingSaveSuccess else { return }
@@ -90,7 +83,6 @@ struct DataSelectionView: View {
     private func dismissSaveSuccessConfirmation() {
         cancelSaveSuccessDismissTask()
         showingSaveSuccess = false
-        saveSuccessRemainingSeconds = 0
     }
 
     private func cancelSaveSuccessDismissTask() {
@@ -301,19 +293,14 @@ struct DataSelectionView: View {
             csvContent = ""
             isPreparingExport = false
             cancelSaveSuccessDismissTask()
-            saveSuccessRemainingSeconds = 0
             clearPendingExport()
         }
-        .sheet(isPresented: $showingSaveSuccess, onDismiss: {
-            cancelSaveSuccessDismissTask()
-            saveSuccessRemainingSeconds = 0
-        }) {
-            SaveSuccessConfirmationView(
-                fileName: fileName,
-                autoDismissEnabled: settings.autoDismissSaveConfirmation,
-                remainingSeconds: saveSuccessRemainingSeconds,
-                onClose: dismissSaveSuccessConfirmation
-            )
+        .alert("File saved!", isPresented: $showingSaveSuccess) {
+            Button("Close") {
+                dismissSaveSuccessConfirmation()
+            }
+        } message: {
+            Text("File \(fileName) has been saved!")
         }
         .alert("Export Estimate", isPresented: $showingEstimateConfirmation, presenting: pendingExportEstimate) { _ in
             Button("Cancel", role: .cancel) {
@@ -520,58 +507,6 @@ struct DataSelectionView: View {
     private func clearPendingExport() {
         pendingExportPayload = nil
         pendingExportEstimate = nil
-    }
-
-
-}
-
-private struct SaveSuccessConfirmationView: View {
-    private static let totalSeconds = 5
-
-    let fileName: String
-    let autoDismissEnabled: Bool
-    let remainingSeconds: Int
-    let onClose: () -> Void
-
-    private var progressValue: Double {
-        Double(Self.totalSeconds - remainingSeconds)
-    }
-
-    private var countdownText: String {
-        remainingSeconds == 1 ? "Closing in 1 second" : "Closing in \(remainingSeconds) seconds"
-    }
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 44, weight: .semibold))
-                .foregroundStyle(.green)
-
-            Text("File \(fileName) has been saved!")
-                .font(.headline)
-                .multilineTextAlignment(.center)
-
-            if autoDismissEnabled {
-                VStack(spacing: 10) {
-                    ProgressView(value: progressValue, total: Double(Self.totalSeconds))
-                    Text(countdownText)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                Text("Auto-dismiss is off. Tap Close to dismiss this confirmation.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-
-            Button("Close", action: onClose)
-                .buttonStyle(.borderedProminent)
-        }
-        .padding(24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
     }
 }
 
