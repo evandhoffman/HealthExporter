@@ -79,6 +79,14 @@ enum HealthKitQueryHelpers {
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
         return [weightType]
     }
+
+    /// Formats a simulator mock-data failure for display in the Settings debug UI.
+    static func simulatorTestDataFailureMessage(_ error: Error?) -> String {
+        if let error {
+            return "Failed to generate weight data: \(error.localizedDescription)"
+        }
+        return "Failed to generate weight data."
+    }
     #endif
 }
 

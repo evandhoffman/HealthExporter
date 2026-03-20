@@ -240,4 +240,20 @@ final class HealthKitQueryHelpersTests: XCTestCase {
         XCTAssertEqual(shareTypes.count, 1)
         XCTAssertTrue(shareTypes.contains(weightType))
     }
+
+    func testSimulatorTestDataFailureMessage_includesUnderlyingError() {
+        let underlying = NSError(domain: "HealthKit", code: 42, userInfo: [
+            NSLocalizedDescriptionKey: "Permission denied"
+        ])
+
+        let message = HealthKitQueryHelpers.simulatorTestDataFailureMessage(underlying)
+
+        XCTAssertEqual(message, "Failed to generate weight data: Permission denied")
+    }
+
+    func testSimulatorTestDataFailureMessage_withoutUnderlyingError() {
+        let message = HealthKitQueryHelpers.simulatorTestDataFailureMessage(nil)
+
+        XCTAssertEqual(message, "Failed to generate weight data.")
+    }
 }
