@@ -12,6 +12,14 @@ struct SettingsView: View {
         NavigationStack {
             VStack {
                 Form {
+                    Section(header: Text("Export Behavior")) {
+                        Toggle("Auto-dismiss save confirmation", isOn: $settings.autoDismissSaveConfirmation)
+                            .accessibilityIdentifier("autoDismissSaveConfirmationToggle")
+                        Text("Closes the save confirmation after 5 seconds.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
                     Section(header: Text("Export Format")) {
                         Picker("Date Format", selection: $settings.dateFormat) {
                             ForEach(DateFormatOption.allCases, id: \.self) { option in

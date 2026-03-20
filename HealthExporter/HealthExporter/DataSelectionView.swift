@@ -20,6 +20,7 @@ struct DataSelectionView: View {
     @State private var startDate = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
     @State private var endDate = Date()
     @State private var showingSaveSuccess = false
+    @State private var saveSuccessDismissTask: Task<Void, Never>?
     @State private var showingEstimateConfirmation = false
     @State private var isPreparingExport = false
     @State private var exportEnabled = false
@@ -33,6 +34,7 @@ struct DataSelectionView: View {
 
     private static let dayOptions = Array(1...30) + [60, 90, 180, 365, 730]
     private static let recordOptions = Array(stride(from: 100, through: 1_000, by: 100)) + Array(stride(from: 2_000, through: 10_000, by: 1_000))
+    private static let saveSuccessAutoDismissSeconds = 5
 
     private var isValidDateRange: Bool {
         startDate <= endDate
@@ -55,6 +57,37 @@ struct DataSelectionView: View {
             startDate: startDate,
             endDate: endDate
         )
+    }
+
+    private func presentSaveSuccessConfirmation() {
+        showingSaveSuccess = true
+
+        guard settings.autoDismissSaveConfirmation else {
+            cancelSaveSuccessDismissTask()
+            return
+        }
+
+        cancelSaveSuccessDismissTask()
+        saveSuccessDismissTask = Task { @MainActor in
+            do {
+                try await Task.sleep(nanoseconds: UInt64(Self.saveSuccessAutoDismissSeconds) * 1_000_000_000)
+            } catch {
+                return
+            }
+
+            guard !Task.isCancelled, showingSaveSuccess else { return }
+            showingSaveSuccess = false
+        }
+    }
+
+    private func dismissSaveSuccessConfirmation() {
+        cancelSaveSuccessDismissTask()
+        showingSaveSuccess = false
+    }
+
+    private func cancelSaveSuccessDismissTask() {
+        saveSuccessDismissTask?.cancel()
+        saveSuccessDismissTask = nil
     }
 
     var body: some View {
@@ -245,7 +278,7 @@ struct DataSelectionView: View {
             switch result {
             case .success(let url):
                 logger.info("File saved to: \(url.path)")
-                showingSaveSuccess = true
+                presentSaveSuccessConfirmation()
                 csvContent = ""
                 isPreparingExport = false
             case .failure(let error):
@@ -259,12 +292,15 @@ struct DataSelectionView: View {
         .onDisappear {
             csvContent = ""
             isPreparingExport = false
+            cancelSaveSuccessDismissTask()
             clearPendingExport()
         }
         .alert("File saved!", isPresented: $showingSaveSuccess) {
-            Button("Ok!") {
-                showingSaveSuccess = false
+            Button("Close") {
+                dismissSaveSuccessConfirmation()
             }
+        } message: {
+            Text("File \(fileName) has been saved!")
         }
         .alert("Export Estimate", isPresented: $showingEstimateConfirmation, presenting: pendingExportEstimate) { _ in
             Button("Cancel", role: .cancel) {
@@ -284,6 +320,7 @@ struct DataSelectionView: View {
     }
 
     private func exportData() {
+        dismissSaveSuccessConfirmation()
         isPreparingExport = true
 
         healthManager.requestAuthorization(includeA1C: settings.exportA1C) { success, error in
@@ -471,8 +508,6 @@ struct DataSelectionView: View {
         pendingExportPayload = nil
         pendingExportEstimate = nil
     }
-
-
 }
 
 struct DataSelectionView_Previews: PreviewProvider {
