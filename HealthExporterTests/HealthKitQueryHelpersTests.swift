@@ -195,4 +195,41 @@ final class HealthKitQueryHelpersTests: XCTestCase {
         let filtered = HealthKitQueryHelpers.filterA1CSamplesByDateRange(samples, dateRange: range, calendar: calendar)
         XCTAssertEqual(filtered.count, 3)
     }
+
+    // MARK: - generateWeightTestSamples
+
+    func testGenerateWeightTestSamples_createsSixtyDailyWeightRecords() {
+        var gmtCalendar = Calendar(identifier: .gregorian)
+        gmtCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
+
+        var components = DateComponents()
+        components.year = 2026
+        components.month = 3
+        components.day = 20
+        components.hour = 12
+        components.minute = 0
+        components.second = 0
+        components.timeZone = TimeZone(secondsFromGMT: 0)
+        let referenceDate = gmtCalendar.date(from: components)!
+
+        let samples = HealthKitQueryHelpers.generateWeightTestSamples(
+            days: 60,
+            referenceDate: referenceDate,
+            calendar: gmtCalendar
+        ) { index in
+            80.0 + Double(index)
+        }
+
+        XCTAssertEqual(samples.count, 60)
+
+        let firstDate = gmtCalendar.date(byAdding: .day, value: -59, to: referenceDate)!
+        XCTAssertEqual(samples.first?.startDate, firstDate)
+        XCTAssertEqual(samples.last?.startDate, referenceDate)
+
+        for (index, sample) in samples.enumerated() {
+            let expectedDate = gmtCalendar.date(byAdding: .day, value: index - 59, to: referenceDate)!
+            XCTAssertEqual(sample.startDate, expectedDate)
+            XCTAssertEqual(sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo)), 80.0 + Double(index), accuracy: 0.0001)
+        }
+    }
 }

@@ -52,7 +52,7 @@ struct SettingsView: View {
                     #if targetEnvironment(simulator)
                     Section(header: Text("Testing")) {
                         Button(action: generateTestData) {
-                            Text("Generate Test Data")
+                            Text("Generate Weight Data")
                                 .foregroundColor(.blue)
                         }
 
@@ -94,9 +94,9 @@ struct SettingsView: View {
     private func generateTestData() {
         healthManager.generateTestData { success, error in
             if success {
-                testDataMessage = "✓ Test data generated (30 days)"
+                testDataMessage = "✓ Weight data generated (60 days)"
             } else {
-                testDataMessage = "✗ Failed to generate test data"
+                testDataMessage = "✗ Failed to generate weight data"
             }
         }
     }
