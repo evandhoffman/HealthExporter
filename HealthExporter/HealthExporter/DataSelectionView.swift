@@ -301,6 +301,10 @@ struct DataSelectionView: View {
             var stepsSamples: [HKQuantitySample]? = nil
             var glucoseSamples: [GlucoseSampleMgDl]? = nil
             var a1cSamples: [A1CSample]? = nil
+            var weightFetchError: Error?
+            var stepsFetchError: Error?
+            var glucoseFetchError: Error?
+            var a1cFetchError: Error?
             let dispatchGroup = DispatchGroup()
 
             let dateRange = ExportLogic.dateRange(
@@ -317,36 +321,64 @@ struct DataSelectionView: View {
             if settings.exportWeight {
                 dispatchGroup.enter()
                 healthManager.fetchWeightData(dateRange: dateRange, limit: recordLimit) { samples, error in
-                    weightSamples = samples
-                    dispatchGroup.leave()
+                    DispatchQueue.main.async {
+                        weightSamples = samples
+                        weightFetchError = error
+                        dispatchGroup.leave()
+                    }
                 }
             }
 
             if settings.exportSteps {
                 dispatchGroup.enter()
                 healthManager.fetchStepsData(dateRange: dateRange, limit: recordLimit) { samples, error in
-                    stepsSamples = samples
-                    dispatchGroup.leave()
+                    DispatchQueue.main.async {
+                        stepsSamples = samples
+                        stepsFetchError = error
+                        dispatchGroup.leave()
+                    }
                 }
             }
 
             if settings.exportGlucose {
                 dispatchGroup.enter()
                 healthManager.fetchBloodGlucoseDataTyped(dateRange: dateRange, limit: recordLimit) { samples, error in
-                    glucoseSamples = samples
-                    dispatchGroup.leave()
+                    DispatchQueue.main.async {
+                        glucoseSamples = samples
+                        glucoseFetchError = error
+                        dispatchGroup.leave()
+                    }
                 }
             }
 
             if settings.exportA1C {
                 dispatchGroup.enter()
                 healthManager.fetchA1CData(dateRange: dateRange, limit: recordLimit) { samples, error in
-                    a1cSamples = samples
-                    dispatchGroup.leave()
+                    DispatchQueue.main.async {
+                        a1cSamples = samples
+                        a1cFetchError = error
+                        dispatchGroup.leave()
+                    }
                 }
             }
 
             dispatchGroup.notify(queue: .main) {
+                if let fetchError = ExportLogic.firstFetchError(
+                    weightError: weightFetchError,
+                    stepsError: stepsFetchError,
+                    glucoseError: glucoseFetchError,
+                    a1cError: a1cFetchError
+                ) {
+                    weightSamples = nil
+                    stepsSamples = nil
+                    glucoseSamples = nil
+                    a1cSamples = nil
+                    isPreparingExport = false
+                    errorMessage = fetchError.localizedDescription
+                    showErrorAlert = true
+                    return
+                }
+
                 let hasData = ExportLogic.hasAnyData(
                     weightSamples: weightSamples,
                     stepsSamples: stepsSamples,

@@ -33,6 +33,17 @@ enum HealthKitQueryHelpers {
         return (startOfDay, endOfDay)
     }
 
+    /// Builds a HealthKit sample predicate for the supplied date range.
+    static func predicateForDateRange(
+        _ dateRange: (startDate: Date, endDate: Date),
+        calendar: Calendar = .current
+    ) -> NSPredicate? {
+        guard let aligned = dayAlignedRange(from: dateRange, calendar: calendar) else {
+            return nil
+        }
+        return HKQuery.predicateForSamples(withStart: aligned.start, end: aligned.end, options: .strictStartDate)
+    }
+
     /// Filters A1C samples by date range (start-of-day inclusive, end-of-day+1 exclusive).
     static func filterA1CSamplesByDateRange(
         _ samples: [A1CSample],
@@ -68,11 +79,11 @@ class HealthKitManager {
 
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            guard let aligned = HealthKitQueryHelpers.dayAlignedRange(from: dateRange) else {
+            predicate = HealthKitQueryHelpers.predicateForDateRange(dateRange)
+            if predicate == nil {
                 completion(nil, nil)
                 return
             }
-            predicate = HKQuery.predicateForSamples(withStart: aligned.start, end: aligned.end, options: .strictStartDate)
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
@@ -87,11 +98,11 @@ class HealthKitManager {
 
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            guard let aligned = HealthKitQueryHelpers.dayAlignedRange(from: dateRange) else {
+            predicate = HealthKitQueryHelpers.predicateForDateRange(dateRange)
+            if predicate == nil {
                 completion(nil, nil)
                 return
             }
-            predicate = HKQuery.predicateForSamples(withStart: aligned.start, end: aligned.end, options: .strictStartDate)
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
@@ -106,11 +117,11 @@ class HealthKitManager {
 
         var predicate: NSPredicate? = nil
         if let dateRange = dateRange {
-            guard let aligned = HealthKitQueryHelpers.dayAlignedRange(from: dateRange) else {
+            predicate = HealthKitQueryHelpers.predicateForDateRange(dateRange)
+            if predicate == nil {
                 completion(nil, nil)
                 return
             }
-            predicate = HKQuery.predicateForSamples(withStart: aligned.start, end: aligned.end, options: .strictStartDate)
         }
 
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
@@ -136,8 +147,9 @@ class HealthKitManager {
             return
         }
         
+        let predicate = dateRange.flatMap { HealthKitQueryHelpers.predicateForDateRange($0) }
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-        let query = HKSampleQuery(sampleType: clinicalType, predicate: nil, limit: limit, sortDescriptors: [sortDescriptor]) { _, records, error in
+        let query = HKSampleQuery(sampleType: clinicalType, predicate: predicate, limit: limit, sortDescriptors: [sortDescriptor]) { _, records, error in
             guard error == nil else {
                 completion(nil, error)
                 return
@@ -145,7 +157,6 @@ class HealthKitManager {
             
             var a1cSamples = (records as? [HKClinicalRecord])?.compactMap { A1CSample(from: $0) } ?? []
 
-            // Apply date range filtering if provided
             if let dateRange = dateRange {
                 a1cSamples = HealthKitQueryHelpers.filterA1CSamplesByDateRange(a1cSamples, dateRange: dateRange)
             }

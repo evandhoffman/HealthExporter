@@ -21,9 +21,9 @@ This note tracks the current App Store review posture for the `2.4.0` submission
 - `Last X Days` should be clarified or corrected so the date window matches the label.
 - A1C date filtering should be pushed down into the query path instead of filtering after fetch.
 - The testing guide should use a collision-resistant simulator destination.
-- The launch icon asset should be upgraded from a single 1x image if polish matters for this resubmission.
 
 ## Notes
 
 - `NSHealthUpdateUsageDescription` is still present because the simulator-only write path still references `healthStore.save(...)`.
+- The app icon asset catalog now includes the declared dark and tinted variants, using the same 1024x1024 source image.
 - The app remains privacy-first: no health data is persisted beyond the export flow, and no analytics or account system is present.

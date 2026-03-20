@@ -20,7 +20,7 @@ final class DayRangeSummaryFormatterTests: XCTestCase {
 
         let summary = DayRangeSummaryFormatter.summaryText(forDays: 7, relativeTo: referenceDate, calendar: calendar)
 
-        XCTAssertEqual(summary, "March 13, 2026 to today")
+        XCTAssertEqual(summary, "March 14, 2026 to today")
     }
 
     func testSummaryText_formatsOneDayRange() {
@@ -28,6 +28,6 @@ final class DayRangeSummaryFormatterTests: XCTestCase {
 
         let summary = DayRangeSummaryFormatter.summaryText(forDays: 1, relativeTo: referenceDate, calendar: calendar)
 
-        XCTAssertEqual(summary, "March 19, 2026 to today")
+        XCTAssertEqual(summary, "March 20, 2026 to today")
     }
 }

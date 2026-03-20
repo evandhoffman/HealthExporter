@@ -36,7 +36,8 @@ enum ExportLogic {
     ) -> (startDate: Date, endDate: Date)? {
         switch option {
         case .lastXDays:
-            if let start = calendar.date(byAdding: .day, value: -lastXDays, to: now) {
+            let offset = max(lastXDays - 1, 0)
+            if let start = calendar.date(byAdding: .day, value: -offset, to: now) {
                 return (start, now)
             }
             return nil
@@ -47,6 +48,28 @@ enum ExportLogic {
         case .allRecords:
             return nil
         }
+    }
+
+    /// Returns the first fetch error in display order for the selected metrics.
+    static func firstFetchError(
+        weightError: Error?,
+        stepsError: Error?,
+        glucoseError: Error?,
+        a1cError: Error?
+    ) -> ExportError? {
+        if let weightError {
+            return .healthKitQueryFailed(metric: HealthMetrics.weight.name, underlying: weightError)
+        }
+        if let stepsError {
+            return .healthKitQueryFailed(metric: HealthMetrics.steps.name, underlying: stepsError)
+        }
+        if let glucoseError {
+            return .healthKitQueryFailed(metric: HealthMetrics.glucose.name, underlying: glucoseError)
+        }
+        if let a1cError {
+            return .healthKitQueryFailed(metric: HealthMetrics.a1c.name, underlying: a1cError)
+        }
+        return nil
     }
 
     /// Computes the record limit for a given option.
