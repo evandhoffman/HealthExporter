@@ -96,7 +96,11 @@ struct SettingsView: View {
             if success {
                 testDataMessage = "✓ Weight data generated (60 days)"
             } else {
-                testDataMessage = "✗ Failed to generate weight data"
+                if let error {
+                    testDataMessage = "✗ Failed to generate weight data: \(error.localizedDescription)"
+                } else {
+                    testDataMessage = "✗ Failed to generate weight data"
+                }
             }
         }
     }

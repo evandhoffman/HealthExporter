@@ -232,4 +232,12 @@ final class HealthKitQueryHelpersTests: XCTestCase {
             XCTAssertEqual(sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo)), 80.0 + Double(index), accuracy: 0.0001)
         }
     }
+
+    func testSimulatorTestDataShareTypes_containsWeightType() {
+        let shareTypes = HealthKitQueryHelpers.simulatorTestDataShareTypes()
+        let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+
+        XCTAssertEqual(shareTypes.count, 1)
+        XCTAssertTrue(shareTypes.contains(weightType))
+    }
 }

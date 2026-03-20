@@ -72,6 +72,14 @@ enum HealthKitQueryHelpers {
             )
         }
     }
+
+    #if targetEnvironment(simulator)
+    /// The sample types the simulator test-data generator needs permission to write.
+    static func simulatorTestDataShareTypes() -> Set<HKSampleType> {
+        let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+        return [weightType]
+    }
+    #endif
 }
 
 class HealthKitManager {
@@ -186,9 +194,18 @@ class HealthKitManager {
     #if targetEnvironment(simulator)
     func generateTestData(completion: @escaping (Bool, Error?) -> Void) {
         let samples = HealthKitQueryHelpers.generateWeightTestSamples(days: 60)
+        let shareTypes = HealthKitQueryHelpers.simulatorTestDataShareTypes()
 
-        healthStore.save(samples) { success, error in
-            completion(success, error)
+        healthStore.requestAuthorization(toShare: shareTypes, read: Set()) { [weak self] success, error in
+            guard let self else { return }
+            guard success else {
+                completion(false, error)
+                return
+            }
+
+            self.healthStore.save(samples) { success, error in
+                completion(success, error)
+            }
         }
     }
     #endif
